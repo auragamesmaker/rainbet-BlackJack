@@ -3,337 +3,419 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="color-scheme" content="dark">
     <title>Vanilla - Blackjack Practice</title>
-    <meta name="description" content="Practice blackjack with Vanilla - fair shuffling and strategy training.">
+    <meta name="description"
+        content="Practice blackjack with Vanilla - fair shuffling, card counting trainer, and strategy training.">
 
     <link rel="icon" type="image/png" href="assets/logo.png">
 
+    <!-- Preload critical resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preload"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+        as="style">
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" as="style">
 
-    <!-- FontAwesome -->
+    <!-- Fonts & Icons -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- Core styles with full layout -->
     <link rel="stylesheet" href="css/styles.css">
+    <!-- Modern theme overrides -->
+    <link rel="stylesheet" href="css/styles-modern.css">
+    <!-- Action button updates -->
+    <link rel="stylesheet" href="css/new-layout.css">
 </head>
 
 <body>
     <div class="app-container">
-        <!-- Header -->
-        <header class="header">
-            <div class="logo">
-                <img src="assets/logo.png" alt="Vanilla" class="logo-img">
-                <span class="logo-text">Vanilla</span>
-            </div>
+        <!-- Header - Compact modern design -->
+        <header class="header" role="banner">
+            <div class="header-left">
+                <div class="logo">
+                    <img src="assets/logo.png" alt="Vanilla" class="logo-img">
+                    <span class="logo-text">Vanilla</span>
+                </div>
 
-            <div class="stats-row">
-                <div class="stat-chip">
-                    <span class="stat-label">Balance</span>
-                    <span class="stat-value accent">$<span id="balance">10,000</span></span>
-                </div>
-                <div class="stat-chip">
-                    <span class="stat-label">Hands</span>
-                    <span class="stat-value" id="stats-hands">0</span>
-                </div>
-                <div class="stat-chip">
-                    <span class="stat-label">Win Rate</span>
-                    <span class="stat-value" id="stats-winrate">0%</span>
-                </div>
-                <div class="stat-chip">
-                    <span class="stat-label">Profit</span>
-                    <span class="stat-value" id="stats-profit">$0</span>
+                <!-- Card Count Display (hidden by default) -->
+                <div class="count-display" id="count-display" style="display: none;" aria-live="polite">
+                    <div class="count-item">
+                        <span class="count-label">RC</span>
+                        <span class="count-value" id="running-count">0</span>
+                    </div>
+                    <div class="count-item">
+                        <span class="count-label">TC</span>
+                        <span class="count-value" id="true-count">0</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="header-actions">
-                <button class="icon-btn" id="btn-add-chips" title="Add Chips">
+            <div class="header-center">
+                <div class="bankroll-display">
+                    <span class="bankroll-amount">$<span id="balance">10,000</span></span>
+                    <span class="bankroll-stat win" id="stats-winrate" title="Win Rate">52%</span>
+                    <span class="bankroll-stat profit" id="stats-profit" title="Session Profit">+$0</span>
+                    <span class="bankroll-stat hands hide-mobile" id="stats-hands" title="Hands Played">0</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <button type="button" class="icon-btn" id="btn-add-chips" title="Add Chips" aria-label="Add Chips">
                     <i class="fa-solid fa-coins"></i>
                 </button>
-                <button class="icon-btn" id="btn-settings" title="Settings">
+                <button type="button" class="icon-btn" id="btn-settings" title="Settings" aria-label="Settings">
                     <i class="fa-solid fa-gear"></i>
                 </button>
             </div>
         </header>
 
-        <!-- Main Game Layout -->
-        <main class="game-layout">
-            <!-- Left Panel - Betting -->
-            <aside class="panel panel-left">
-                <div class="panel-section">
-                    <div class="section-title">Your Bet</div>
-                    <div class="bet-display">$<span id="current-bet-value">0</span></div>
-
-                    <div class="quick-btns">
-                        <button class="quick-btn" id="btn-half">1/2</button>
-                        <button class="quick-btn" id="btn-double-bet">2x</button>
-                        <button class="quick-btn" id="btn-max">MAX</button>
-                    </div>
-                    <div class="quick-btns">
-                        <button class="quick-btn" id="btn-rebet">REBET</button>
-                        <button class="quick-btn" id="btn-clear-bet">CLEAR</button>
-                    </div>
-                </div>
-
-                <div class="panel-section">
-                    <div class="section-title">Chips</div>
-                    <div class="chips-grid">
-                        <div class="chip chip-1" data-value="1">$1</div>
-                        <div class="chip chip-5" data-value="5">$5</div>
-                        <div class="chip chip-25" data-value="25">$25</div>
-                        <div class="chip chip-100" data-value="100">$100</div>
-                        <div class="chip chip-500" data-value="500">$500</div>
-                        <div class="chip chip-1000" data-value="1000">$1K</div>
-                    </div>
-                </div>
-
-                <div class="panel-section shoe-section">
-                    <div class="shoe-row">
-                        <span>Cards</span>
-                        <span><span id="cards-remaining">312</span>/<span id="cards-total">312</span></span>
-                    </div>
-                    <div class="shoe-row">
-                        <span>Decks</span>
-                        <span id="deck-count">6</span>
-                    </div>
-                    <button class="reshuffle-btn" id="btn-reshuffle">
-                        <i class="fa-solid fa-rotate"></i> Reshuffle
-                    </button>
-                </div>
-            </aside>
-
-            <!-- Center - Game Area -->
-            <section class="game-area">
-                <!-- Table Surface -->
-                <div class="table-surface">
-                    <!-- Table Lines -->
-                    <div class="table-line table-line-top"></div>
-                    <div class="table-line table-line-bottom"></div>
-                    <div class="table-arc table-arc-dealer"></div>
-                    <div class="table-arc table-arc-player"></div>
-
+        <!-- Main Game Area - Centered, no sidebars -->
+        <main class="game-main" role="main" data-state="betting">
+            <div class="game-container" data-state="betting">
+                <!-- Game Table - Three Zone Layout -->
+                <div class="game-table">
                     <!-- Dealer Zone -->
-                    <div class="hand-zone dealer-zone">
-                        <div class="hand-info">
-                            <span class="hand-label">DEALER</span>
-                            <span class="hand-value" id="dealer-value">-</span>
-                        </div>
-                        <div class="cards-row" id="dealer-cards"></div>
+                    <div class="table-zone dealer-zone">
+                        <span class="zone-label">DEALER</span>
+                        <div class="cards-area" id="dealer-cards" role="list" aria-label="Dealer's Cards"></div>
+                        <div class="hand-badge" id="dealer-value" aria-live="polite">-</div>
                     </div>
 
-                    <!-- Center Bet Display -->
-                    <div class="center-controls">
-                        <div class="bet-stack" id="bet-stack">
-                            <div class="bet-chips" id="bet-chips"></div>
-                            <div class="bet-amount" id="bet-amount-display">$0</div>
+                    <!-- Table Center - Bet Display & Hint -->
+                    <div class="table-center">
+                        <div class="bet-indicator" id="bet-indicator">
+                            <div class="bet-indicator-label">BET</div>
+                            <div class="bet-indicator-value">$<span id="current-bet-value">0</span></div>
                         </div>
-
-                        <!-- Hint -->
-                        <div class="hint-row" id="hint-container" style="display: none;">
-                            <i class="fa-solid fa-lightbulb"></i> <span id="hint-text">HIT</span>
+                        <!-- Chip stacks visual (only during betting) -->
+                        <div class="chip-stacks-container" id="chip-stacks-container"></div>
+                        <!-- Hint Display -->
+                        <div class="hint-badge" id="hint-container" style="display: none;" aria-live="polite">
+                            <i class="fa-solid fa-lightbulb"></i>
+                            <span id="hint-text">HIT</span>
                         </div>
+                        <!-- Betting prompt (only during betting with no bet) -->
+                        <div class="betting-prompt" id="betting-prompt">Place Your Bet</div>
                     </div>
 
                     <!-- Player Zone -->
-                    <div class="hand-zone player-zone active-turn">
-                        <div class="cards-row" id="player-cards"></div>
-                        <div class="hand-info">
-                            <span class="hand-label">YOU</span>
-                            <span class="hand-value" id="player-value">-</span>
+                    <div class="table-zone player-zone">
+                        <div class="player-hands-container" id="player-hands-container">
+                            <div class="hand-wrapper" role="region" aria-label="Your Hand">
+                                <div class="hand-badge" id="player-value" aria-live="polite">-</div>
+                                <div class="cards-area" id="player-cards" role="list" aria-label="Your Cards"></div>
+                            </div>
                         </div>
+                        <span class="zone-label">YOU</span>
                     </div>
                 </div>
 
-                <!-- Centered Deal Button - Only visible during betting -->
-                <div class="deal-button-container" id="deal-button-container">
-                    <button class="deal-btn-main" id="btn-deal" data-action="deal">
+                <!-- Deck Info - Minimalist corner display -->
+                <div class="deck-info" id="deck-info">
+                    <div class="deck-stat">
                         <i class="fa-solid fa-layer-group"></i>
-                        <span>DEAL</span>
+                        <span id="cards-remaining">312</span>/<span id="cards-total">312</span>
+                    </div>
+                    <button type="button" class="btn-reshuffle" id="btn-reshuffle" aria-label="Reshuffle Deck">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>Reshuffle</span>
                     </button>
                 </div>
+            </div>
 
-                <!-- Docked Action Buttons Bar - Visible during gameplay -->
-                <div class="action-dock" id="action-dock">
-                    <button class="action-btn" id="btn-surrender" data-action="surrender">
-                        <div class="action-icon">
-                            <i class="fa-solid fa-flag"></i>
-                        </div>
-                        <span class="action-label">Surrender</span>
-                    </button>
-                    <button class="action-btn" id="btn-split" data-action="split">
-                        <div class="action-icon">
-                            <i class="fa-solid fa-arrows-left-right"></i>
-                        </div>
-                        <span class="action-label">Split</span>
-                    </button>
-                    <button class="action-btn" id="btn-stand" data-action="stand">
-                        <div class="action-icon">
-                            <i class="fa-solid fa-hand"></i>
-                        </div>
-                        <span class="action-label">Stand</span>
-                    </button>
-                    <button class="action-btn" id="btn-hit" data-action="hit">
-                        <div class="action-icon">
-                            <i class="fa-solid fa-plus"></i>
-                        </div>
+            <!-- Unified Bottom Control Bar -->
+            <div class="game-controls" id="game-controls">
+                <!-- Betting Controls - Shows during betting phase -->
+                <div class="betting-controls" id="betting-controls">
+                    <div class="chip-row">
+                        <button type="button" class="chip-btn" data-value="1" aria-label="Bet $1">
+                            <div class="chip-modern chip-1"><span class="chip-amount">1</span></div>
+                        </button>
+                        <button type="button" class="chip-btn" data-value="5" aria-label="Bet $5">
+                            <div class="chip-modern chip-5"><span class="chip-amount">5</span></div>
+                        </button>
+                        <button type="button" class="chip-btn" data-value="25" aria-label="Bet $25">
+                            <div class="chip-modern chip-25"><span class="chip-amount">25</span></div>
+                        </button>
+                        <button type="button" class="chip-btn" data-value="100" aria-label="Bet $100">
+                            <div class="chip-modern chip-100"><span class="chip-amount">100</span></div>
+                        </button>
+                        <button type="button" class="chip-btn" data-value="500" aria-label="Bet $500">
+                            <div class="chip-modern chip-500"><span class="chip-amount">500</span></div>
+                        </button>
+                        <button type="button" class="chip-btn" data-value="1000" aria-label="Bet $1000">
+                            <div class="chip-modern chip-1000"><span class="chip-amount">1K</span></div>
+                        </button>
+                    </div>
+                    <div class="betting-actions">
+                        <button type="button" class="bet-action-btn" id="btn-clear-bet" aria-label="Clear Bet">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <button type="button" class="bet-action-btn" id="btn-rebet" aria-label="Repeat Last Bet">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                        <button type="button" class="bet-action-btn bet-action-max" id="btn-max" aria-label="Max Bet">
+                            MAX
+                        </button>
+                        <button type="button" class="btn-deal" id="btn-deal" aria-label="Deal Cards">
+                            DEAL
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Action Controls - Shows during playing phase -->
+                <div class="action-controls" id="action-controls">
+                    <button type="button" class="action-btn action-hit" id="btn-hit" aria-label="Hit">
+                        <div class="action-icon"><i class="fa-solid fa-plus"></i></div>
                         <span class="action-label">Hit</span>
                     </button>
-                    <button class="action-btn" id="btn-double" data-action="double">
-                        <div class="action-icon">
-                            <i class="fa-solid fa-coins"></i>
-                        </div>
+                    <button type="button" class="action-btn action-stand" id="btn-stand" aria-label="Stand">
+                        <div class="action-icon"><i class="fa-solid fa-hand"></i></div>
+                        <span class="action-label">Stand</span>
+                    </button>
+                    <button type="button" class="action-btn action-double" id="btn-double" aria-label="Double">
+                        <div class="action-icon"><i class="fa-solid fa-coins"></i></div>
                         <span class="action-label">Double</span>
                     </button>
+                    <button type="button" class="action-btn action-split" id="btn-split" aria-label="Split">
+                        <div class="action-icon"><i class="fa-solid fa-scissors"></i></div>
+                        <span class="action-label">Split</span>
+                    </button>
+                    <button type="button" class="action-btn action-surrender" id="btn-surrender" aria-label="Surrender">
+                        <div class="action-icon"><i class="fa-solid fa-flag"></i></div>
+                        <span class="action-label">Surrender</span>
+                    </button>
                 </div>
-            </section>
-
-            <!-- Right Panel -->
-            <aside class="panel panel-right">
-                <div class="panel-section">
-                    <div class="section-title">Quick Stats</div>
-                    <div class="mini-stat">
-                        <span>Blackjacks</span>
-                        <span id="stats-blackjacks">0</span>
-                    </div>
-                    <div class="mini-stat">
-                        <span>Win Streak</span>
-                        <span id="stats-streak">0</span>
-                    </div>
-                    <div class="mini-stat">
-                        <span>Biggest Win</span>
-                        <span id="stats-biggest">$0</span>
-                    </div>
-                </div>
-
-                <div class="panel-section">
-                    <div class="section-title">Keyboard</div>
-                    <div class="key-hint"><kbd>1-6</kbd> Chips</div>
-                    <div class="key-hint"><kbd>C</kbd> Clear</div>
-                    <div class="key-hint"><kbd>H</kbd> Hit</div>
-                    <div class="key-hint"><kbd>S</kbd> Stand</div>
-                    <div class="key-hint"><kbd>D</kbd> Double</div>
-                    <div class="key-hint"><kbd>P</kbd> Split</div>
-                    <div class="key-hint"><kbd>Enter</kbd> Deal</div>
-                </div>
-            </aside>
+            </div>
         </main>
     </div>
 
     <!-- Result Overlay -->
-    <div class="result-overlay" id="result-overlay">
+    <div class="result-overlay" id="result-overlay" role="dialog" aria-modal="true" aria-labelledby="result-text">
         <div class="result-card">
-            <div class="result-icon" id="result-icon"><i class="fa-solid fa-trophy"></i></div>
+            <div class="result-icon" id="result-icon" aria-hidden="true"><i class="fa-solid fa-trophy"></i></div>
             <div class="result-text" id="result-text">YOU WIN!</div>
             <div class="result-amount" id="result-amount">+$100</div>
         </div>
     </div>
 
-    <!-- Settings Modal -->
-    <div class="modal-backdrop" id="settings-modal">
+    <!-- Insurance Modal -->
+    <div class="modal-backdrop" id="insurance-modal" role="dialog" aria-modal="true" aria-labelledby="insurance-title"
+        style="display: none;">
         <div class="modal">
+            <h2 class="modal-title" id="insurance-title">Insurance?</h2>
+            <p class="modal-desc">Dealer is showing an Ace. Would you like to take insurance?</p>
+            <p class="modal-cost">Cost: <span id="insurance-cost">$0</span> (half your bet)</p>
+            <p class="modal-note">Pays 2:1 if dealer has blackjack</p>
+            <div class="modal-actions">
+                <button type="button" class="btn-modal btn-decline" id="btn-decline-insurance">
+                    <i class="fa-solid fa-xmark"></i>
+                    No Thanks
+                </button>
+                <button type="button" class="btn-modal btn-accept" id="btn-take-insurance">
+                    <i class="fa-solid fa-shield"></i>
+                    Take Insurance
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-backdrop" id="settings-modal" role="dialog" aria-modal="true" aria-labelledby="settings-title"
+        style="display: none;">
+        <div class="modal modal-large">
             <div class="modal-header">
-                <h2 class="modal-title">Settings</h2>
-                <button class="modal-close" id="btn-close-settings">
+                <h2 class="modal-title" id="settings-title">Settings</h2>
+                <button type="button" class="modal-close" id="btn-close-settings" aria-label="Close">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
-            <div class="setting-group">
-                <label class="setting-label">Number of Decks</label>
-                <select class="setting-select" id="setting-deck-count">
-                    <option value="1">1 Deck</option>
-                    <option value="2">2 Decks</option>
-                    <option value="4">4 Decks</option>
-                    <option value="6" selected>6 Decks</option>
-                    <option value="8">8 Decks</option>
-                </select>
-            </div>
+            <div class="settings-content">
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Game Rules</h3>
 
-            <div class="setting-group">
-                <label class="setting-label">Auto-Reshuffle At</label>
-                <select class="setting-select" id="setting-reshuffle-at">
-                    <option value="0.5">50% Penetration</option>
-                    <option value="0.65">65% Penetration</option>
-                    <option value="0.75" selected>75% Penetration</option>
-                    <option value="0.85">85% Penetration</option>
-                    <option value="1">Never (Manual Only)</option>
-                </select>
-            </div>
+                    <div class="setting-row">
+                        <label for="setting-deck-count">Number of Decks</label>
+                        <select id="setting-deck-count" class="setting-select">
+                            <option value="1">1 Deck</option>
+                            <option value="2">2 Decks</option>
+                            <option value="4">4 Decks</option>
+                            <option value="6" selected>6 Decks</option>
+                            <option value="8">8 Decks</option>
+                        </select>
+                    </div>
 
-            <div class="setting-row">
-                <span>Dealer Hits Soft 17</span>
-                <div class="toggle active" id="setting-dealer-h17"></div>
-            </div>
+                    <div class="setting-row">
+                        <label for="setting-reshuffle-at">Reshuffle At</label>
+                        <select id="setting-reshuffle-at" class="setting-select">
+                            <option value="25">25%</option>
+                            <option value="50" selected>50%</option>
+                            <option value="75">75%</option>
+                        </select>
+                    </div>
 
-            <div class="setting-row">
-                <span>Show Strategy Hints</span>
-                <div class="toggle" id="toggle-hints"></div>
-            </div>
+                    <div class="setting-row">
+                        <label for="setting-dealer-h17">
+                            <span>Dealer Hits Soft 17</span>
+                            <span class="setting-hint">Increases house edge</span>
+                        </label>
+                        <label class="toggle">
+                            <input type="checkbox" id="setting-dealer-h17">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
 
-            <div class="setting-row">
-                <span>Sound Effects</span>
-                <div class="toggle active" id="toggle-sound"></div>
-            </div>
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Features</h3>
 
-            <button class="btn-secondary" id="btn-reset-stats">
-                <i class="fa-solid fa-trash-can"></i> Reset Statistics
-            </button>
+                    <div class="setting-row">
+                        <label for="toggle-hints">Strategy Hints</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-hints">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row">
+                        <label for="toggle-counting">Card Counting</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-counting">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row" id="counting-system-group" style="display: none;">
+                        <label for="setting-count-system">Counting System</label>
+                        <select id="setting-count-system" class="setting-select">
+                            <option value="hi-lo">Hi-Lo</option>
+                            <option value="ko">K-O</option>
+                            <option value="omega2">Omega II</option>
+                            <option value="hi-opt1">Hi-Opt I</option>
+                            <option value="hi-opt2">Hi-Opt II</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-row">
+                        <label for="toggle-autostand">Auto Stand on 21</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-autostand" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row">
+                        <label for="toggle-sound">Sound Effects</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-sound" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Theme</h3>
+                    <div class="theme-grid" id="theme-picker">
+                        <button type="button" class="theme-option active" data-theme="vanilla">
+                            <span class="theme-preview theme-vanilla"></span>
+                            <span class="theme-name">Vanilla</span>
+                        </button>
+                        <button type="button" class="theme-option" data-theme="emerald">
+                            <span class="theme-preview theme-emerald"></span>
+                            <span class="theme-name">Emerald</span>
+                        </button>
+                        <button type="button" class="theme-option" data-theme="crimson">
+                            <span class="theme-preview theme-crimson"></span>
+                            <span class="theme-name">Crimson</span>
+                        </button>
+                        <button type="button" class="theme-option" data-theme="sapphire">
+                            <span class="theme-preview theme-sapphire"></span>
+                            <span class="theme-name">Sapphire</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <h3 class="settings-section-title">Visuals</h3>
+                    <div class="setting-row">
+                        <label for="setting-sound-pack">Sound Pack</label>
+                        <select id="setting-sound-pack" class="setting-select">
+                            <option value="premium">Premium Casino</option>
+                            <option value="classic">Classic Casino</option>
+                            <option value="minimal">Minimalist</option>
+                        </select>
+                    </div>
+                    <div class="setting-row">
+                        <label for="setting-volume">Volume</label>
+                        <input type="range" id="setting-volume" class="setting-range" min="0" max="100" value="50">
+                    </div>
+                </div>
+
+                <div class="settings-actions">
+                    <button type="button" class="btn-settings" id="btn-reset-stats">
+                        <i class="fa-solid fa-rotate-left"></i>
+                        Reset Statistics
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Add Money Modal -->
-    <div class="modal-backdrop" id="add-money-modal">
+    <div class="modal-backdrop" id="add-money-modal" role="dialog" aria-modal="true" aria-labelledby="add-money-title"
+        style="display: none;">
         <div class="modal">
             <div class="modal-header">
-                <h2 class="modal-title">Add Money</h2>
-                <button class="modal-close" id="btn-close-add-money">
+                <h2 class="modal-title" id="add-money-title">Add Chips</h2>
+                <button type="button" class="modal-close" id="btn-close-add-money" aria-label="Close">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
 
             <div class="add-money-content">
-                <div class="setting-group">
-                    <label class="setting-label">Custom Amount</label>
-                    <div class="money-input-row">
-                        <span class="money-prefix">$</span>
-                        <input type="number" class="money-input" id="custom-money-amount" min="1" max="1000000"
-                            value="10000" placeholder="10000">
+                <div class="quick-amounts">
+                    <button type="button" class="quick-amount-btn" data-amount="1000">$1,000</button>
+                    <button type="button" class="quick-amount-btn" data-amount="5000">$5,000</button>
+                    <button type="button" class="quick-amount-btn" data-amount="10000">$10,000</button>
+                    <button type="button" class="quick-amount-btn" data-amount="50000">$50,000</button>
+                </div>
+
+                <div class="custom-amount">
+                    <label for="custom-amount-input">Custom Amount</label>
+                    <div class="input-group">
+                        <span class="input-prefix">$</span>
+                        <input type="number" id="custom-amount-input" class="amount-input" placeholder="0" min="1"
+                            max="999999999999">
                     </div>
                 </div>
 
-                <div class="quick-amounts">
-                    <button class="quick-amount-btn" data-amount="1000">$1,000</button>
-                    <button class="quick-amount-btn" data-amount="5000">$5,000</button>
-                    <button class="quick-amount-btn" data-amount="10000">$10,000</button>
-                    <button class="quick-amount-btn" data-amount="25000">$25,000</button>
-                    <button class="quick-amount-btn" data-amount="50000">$50,000</button>
-                    <button class="quick-amount-btn" data-amount="100000">$100,000</button>
-                </div>
-
-                <button class="btn-primary-lg" id="btn-confirm-add-money">
-                    <i class="fa-solid fa-plus"></i> Add Funds
+                <button type="button" class="btn-modal btn-accept btn-full" id="btn-confirm-add-money">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Chips
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Toast Container -->
-    <div class="toast-container" id="toast-container"></div>
+    <!-- UI Components -->
+    <div id="toast-container"></div>
 
-    <!-- Scripts -->
+    <!-- Core Modules -->
+    <script src="js/sounds.js"></script>
+    <script src="js/themes.js"></script>
     <script src="js/deck.js"></script>
     <script src="js/game.js"></script>
-    <script src="js/ui.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const game = new BlackjackGame();
-            const ui = new BlackjackUI(game);
-            window.game = game;
-            window.ui = ui;
-        });
-    </script>
+    <script src="js/ui-modern.js"></script>
+
+    <!-- App Initialization -->
+    <script src="js/init.js"></script>
 </body>
 
 </html>

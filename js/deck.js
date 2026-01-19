@@ -1,12 +1,22 @@
 /**
  * Blackjack Practice - Deck Module
  * Implements fair card shuffling using Fisher-Yates algorithm
+ * Includes card counting systems
  */
 
-// Card suits and ranks
+// === Constants ===
 const SUITS = ['♠', '♥', '♦', '♣'];
 const SUIT_NAMES = ['spades', 'hearts', 'diamonds', 'clubs'];
 const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+// Card counting systems - values for each rank
+const COUNTING_SYSTEMS = {
+    'hi-lo': { 'A': -1, '2': 1, '3': 1, '4': 1, '5': 1, '6': 1, '7': 0, '8': 0, '9': 0, '10': -1, 'J': -1, 'Q': -1, 'K': -1 },
+    'ko': { 'A': -1, '2': 1, '3': 1, '4': 1, '5': 1, '6': 1, '7': 1, '8': 0, '9': 0, '10': -1, 'J': -1, 'Q': -1, 'K': -1 },
+    'omega2': { 'A': 0, '2': 1, '3': 1, '4': 2, '5': 2, '6': 2, '7': 1, '8': 0, '9': -1, '10': -2, 'J': -2, 'Q': -2, 'K': -2 },
+    'hi-opt1': { 'A': 0, '2': 0, '3': 1, '4': 1, '5': 1, '6': 1, '7': 0, '8': 0, '9': 0, '10': -1, 'J': -1, 'Q': -1, 'K': -1 },
+    'hi-opt2': { 'A': 0, '2': 1, '3': 1, '4': 2, '5': 2, '6': 1, '7': 1, '8': 0, '9': 0, '10': -2, 'J': -2, 'Q': -2, 'K': -2 }
+};
 
 /**
  * Creates a single card object
@@ -17,7 +27,7 @@ const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
 function createCard(suit, rank) {
     const isRed = suit === '♥' || suit === '♦';
     const value = getCardValue(rank);
-    
+
     return {
         suit,
         rank,
@@ -27,6 +37,7 @@ function createCard(suit, rank) {
         isAce: rank === 'A',
         isFaceCard: ['J', 'Q', 'K'].includes(rank),
         id: `${rank}${suit}`,
+        faceUp: true,
         toString() {
             return `${this.rank}${this.suit}`;
         }
@@ -48,24 +59,21 @@ function getCardValue(rank) {
  * Deck class for managing multiple decks of cards
  */
 class Deck {
-    /**
-     * @param {number} deckCount - Number of standard 52-card decks to use
-     */
     constructor(deckCount = 6) {
         this.deckCount = deckCount;
         this.cards = [];
         this.dealtCards = [];
-        this.penetration = 0.75; // Reshuffle when 75% of shoe is dealt
+        this.penetration = 0.75;
+        this.runningCount = 0;
+        this.countingSystem = 'hi-lo';
         this.initialize();
     }
 
-    /**
-     * Initialize the deck(s) with all cards
-     */
     initialize() {
         this.cards = [];
         this.dealtCards = [];
-        
+        this.runningCount = 0;
+
         for (let d = 0; d < this.deckCount; d++) {
             for (const suit of SUITS) {
                 for (const rank of RANKS) {
@@ -76,104 +84,105 @@ class Deck {
     }
 
     /**
-     * Fisher-Yates shuffle algorithm - mathematically proven fair shuffle
-     * Each permutation has equal probability of occurring
+     * Fisher-Yates shuffle
      */
     shuffle() {
         const array = this.cards;
-        
-        // Fisher-Yates (Knuth) shuffle
+
         for (let i = array.length - 1; i > 0; i--) {
-            // Generate cryptographically secure random number if available
             let j;
             if (window.crypto && window.crypto.getRandomValues) {
                 const randomBuffer = new Uint32Array(1);
                 window.crypto.getRandomValues(randomBuffer);
                 j = randomBuffer[0] % (i + 1);
             } else {
-                // Fallback to Math.random (still fair, just not crypto-secure)
                 j = Math.floor(Math.random() * (i + 1));
             }
-            
-            // Swap elements
             [array[i], array[j]] = [array[j], array[i]];
         }
-        
+
         this.dealtCards = [];
-        console.log(`🎴 Deck shuffled: ${this.cards.length} cards`);
+        this.runningCount = 0;
     }
 
     /**
-     * Deal a card from the top of the deck
-     * @returns {Object|null} Card object or null if deck is empty
+     * Deal a card and update count
      */
     deal() {
         if (this.cards.length === 0) {
             console.warn('Deck is empty!');
             return null;
         }
-        
+
         const card = this.cards.pop();
         this.dealtCards.push(card);
         return card;
     }
 
     /**
-     * Check if deck needs reshuffling based on penetration
-     * @returns {boolean} True if reshuffle needed
+     * Update running count for a revealed card
      */
+    updateCount(card) {
+        if (!card || !card.faceUp) return;
+        const system = COUNTING_SYSTEMS[this.countingSystem];
+        if (system) {
+            this.runningCount += system[card.rank] || 0;
+        }
+    }
+
+    /**
+     * Get the true count
+     */
+    getTrueCount() {
+        const decksRemaining = this.cards.length / 52;
+        if (decksRemaining < 0.5) return this.runningCount;
+        return Math.round(this.runningCount / decksRemaining);
+    }
+
+    getRunningCount() {
+        return this.runningCount;
+    }
+
+    setCountingSystem(system) {
+        if (COUNTING_SYSTEMS[system]) {
+            this.countingSystem = system;
+        }
+    }
+
     needsReshuffle() {
         const totalCards = this.deckCount * 52;
         const dealtRatio = this.dealtCards.length / totalCards;
         return dealtRatio >= this.penetration;
     }
 
-    /**
-     * Get number of remaining cards
-     * @returns {number} Cards remaining in deck
-     */
     get remaining() {
         return this.cards.length;
     }
 
-    /**
-     * Get total number of cards in a full shoe
-     * @returns {number} Total cards
-     */
     get total() {
         return this.deckCount * 52;
     }
 
-    /**
-     * Reshuffle all cards back into the deck
-     */
     reshuffle() {
         this.cards = [...this.cards, ...this.dealtCards];
         this.dealtCards = [];
+        this.runningCount = 0;
         this.shuffle();
     }
 
-    /**
-     * Set the number of decks and reinitialize
-     * @param {number} count - Number of decks
-     */
     setDeckCount(count) {
         this.deckCount = count;
         this.initialize();
         this.shuffle();
     }
 
-    /**
-     * Set penetration level for auto-reshuffle
-     * @param {number} level - Penetration level (0.5 to 0.9)
-     */
     setPenetration(level) {
-        this.penetration = Math.max(0.5, Math.min(0.9, level));
+        this.penetration = Math.max(0.5, Math.min(1, level));
     }
 }
 
 /**
- * Hand class for managing a player's or dealer's hand
+ * Hand class for managing cards
  */
 class Hand {
     constructor() {
@@ -187,20 +196,11 @@ class Hand {
         this.insuranceBet = 0;
     }
 
-    /**
-     * Add a card to the hand
-     * @param {Object} card - Card object
-     */
     addCard(card) {
         this.cards.push(card);
         this.checkBust();
     }
 
-    /**
-     * Calculate the best value of the hand
-     * Automatically handles soft/hard ace values
-     * @returns {number} Hand value
-     */
     getValue() {
         let value = 0;
         let aces = 0;
@@ -210,7 +210,6 @@ class Hand {
             if (card.isAce) aces++;
         }
 
-        // Convert aces from 11 to 1 as needed
         while (value > 21 && aces > 0) {
             value -= 10;
             aces--;
@@ -219,10 +218,6 @@ class Hand {
         return value;
     }
 
-    /**
-     * Check if hand is soft (has an ace counted as 11)
-     * @returns {boolean} True if soft hand
-     */
     isSoft() {
         let value = 0;
         let aces = 0;
@@ -232,50 +227,30 @@ class Hand {
             if (card.isAce) aces++;
         }
 
-        // If we have aces and value is 21 or less, it's soft
         return aces > 0 && value <= 21;
     }
 
-    /**
-     * Check if hand is a natural blackjack
-     * @returns {boolean} True if blackjack
-     */
     isBlackjack() {
         return this.cards.length === 2 && this.getValue() === 21 && !this.isSplit;
     }
 
-    /**
-     * Check if hand can be split
-     * @returns {boolean} True if splittable
-     */
     canSplit() {
         if (this.cards.length !== 2) return false;
         return this.cards[0].rank === this.cards[1].rank;
     }
 
-    /**
-     * Check if hand can double down
-     * @param {boolean} anyCards - Allow double on any cards (not just first two)
-     * @returns {boolean} True if can double
-     */
     canDouble(anyCards = false) {
         if (this.isDoubled) return false;
         if (anyCards) return true;
         return this.cards.length === 2;
     }
 
-    /**
-     * Check if hand is busted
-     */
     checkBust() {
         if (this.getValue() > 21) {
             this.isBusted = true;
         }
     }
 
-    /**
-     * Clear the hand
-     */
     clear() {
         this.cards = [];
         this.bet = 0;
@@ -287,22 +262,19 @@ class Hand {
         this.insuranceBet = 0;
     }
 
-    /**
-     * Get display string for hand value
-     * @returns {string} Value string (e.g., "Soft 17" or "21")
-     */
     getValueDisplay() {
         const value = this.getValue();
-        if (this.isBlackjack()) return 'Blackjack!';
-        if (this.isBusted) return `Bust (${value})`;
-        if (this.isSoft() && value <= 21) return `Soft ${value}`;
+        if (this.isBlackjack()) return 'BJ!';
+        if (this.isBusted) return `${value}`;
+        if (this.isSoft() && value <= 21) return `${value}`;
         return value.toString();
     }
 }
 
-// Export for use in other modules
+// === Global Exports ===
 window.Deck = Deck;
 window.Hand = Hand;
 window.createCard = createCard;
 window.SUITS = SUITS;
 window.RANKS = RANKS;
+window.COUNTING_SYSTEMS = COUNTING_SYSTEMS;

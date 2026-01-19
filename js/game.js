@@ -1,19 +1,19 @@
 /**
  * Blackjack Practice - Game Engine
- * Core game logic and state management
+ * Core game logic with insurance and card counting
  */
 
-// Game states
+// === Game Constants ===
 const GameState = {
     BETTING: 'betting',
     DEALING: 'dealing',
+    INSURANCE: 'insurance',
     PLAYER_TURN: 'player_turn',
     DEALER_TURN: 'dealer_turn',
     PAYOUT: 'payout',
     GAME_OVER: 'game_over'
 };
 
-// Result types
 const ResultType = {
     WIN: 'win',
     LOSE: 'lose',
@@ -22,36 +22,48 @@ const ResultType = {
     SURRENDER: 'surrender'
 };
 
+// === Configuration Constants ===
+const CONFIG = {
+    DEFAULT_BALANCE: 10000,
+    MIN_BET: 10,
+    MAX_BET: 999000000000,
+    BLACKJACK_PAYS: 1.5,
+    INSURANCE_PAYS: 2,
+    EXPIRATION_MS: 7 * 24 * 60 * 60 * 1000,
+    CARD_DEAL_DELAY: 180,
+    DEALER_TURN_DELAY: 500
+};
+
 /**
  * Main game class
  */
 class BlackjackGame {
     constructor() {
-        // Game components
         this.deck = new Deck(6);
         this.playerHands = [new Hand()];
         this.dealerHand = new Hand();
         this.currentHandIndex = 0;
 
-        // Game state
         this.state = GameState.BETTING;
-        this.balance = 10000;
+        this.balance = CONFIG.DEFAULT_BALANCE;
         this.currentBet = 0;
 
-        // Settings
         this.settings = {
             deckCount: 6,
             dealerHitsSoft17: true,
-            blackjackPays: 1.5,  // 3:2
+            blackjackPays: CONFIG.BLACKJACK_PAYS,
             doubleAfterSplit: true,
             resplitAces: false,
             surrenderAllowed: true,
             insuranceAllowed: true,
-            minBet: 10,
-            maxBet: 999000000000
+            countingEnabled: false,
+            countingSystem: 'hi-lo',
+            minBet: CONFIG.MIN_BET,
+            maxBet: CONFIG.MAX_BET,
+            autoStandOn21: true,
+            numHands: 1
         };
 
-        // Statistics
         this.stats = {
             handsPlayed: 0,
             handsWon: 0,
@@ -62,44 +74,27 @@ class BlackjackGame {
             netProfit: 0
         };
 
-        // Callbacks for UI updates
+        // Callbacks
         this.onStateChange = null;
         this.onCardDealt = null;
         this.onHandResult = null;
         this.onBalanceChange = null;
+        this.onCountUpdate = null;
+        this.onInsurancePrompt = null;
+        this.onReshuffle = null;
 
-        // Initialize - Load saved data first
         this.loadAllData();
         this.deck.shuffle();
     }
 
-    /**
-     * Get the current player hand
-     */
     get currentHand() {
         return this.playerHands[this.currentHandIndex];
     }
 
-    /**
-     * Place a bet and start a new round
-     * @param {number} amount - Bet amount
-     * @returns {boolean} Success
-     */
     placeBet(amount) {
-        if (this.state !== GameState.BETTING) {
-            console.warn('Cannot place bet during active hand');
-            return false;
-        }
-
-        if (amount < this.settings.minBet || amount > this.settings.maxBet) {
-            console.warn(`Bet must be between ${this.settings.minBet} and ${this.settings.maxBet}`);
-            return false;
-        }
-
-        if (amount > this.balance) {
-            console.warn('Insufficient balance');
-            return false;
-        }
+        if (this.state !== GameState.BETTING) return false;
+        if (amount < this.settings.minBet || amount > this.settings.maxBet) return false;
+        if (amount > this.balance) return false;
 
         this.currentBet = amount;
         this.balance -= amount;
@@ -111,43 +106,37 @@ class BlackjackGame {
         return true;
     }
 
-    /**
-     * Deal initial cards
-     */
     async deal() {
-        if (this.currentBet === 0) {
-            console.warn('Must place bet before dealing');
-            return;
-        }
+        if (this.currentBet === 0) return;
 
-        // Check if reshuffle needed
         if (this.deck.needsReshuffle()) {
             this.deck.reshuffle();
-            this.notifyReshuffle();
+            if (this.onReshuffle) this.onReshuffle();
         }
 
         this.state = GameState.DEALING;
         this.notifyStateChange();
 
-        // Clear previous hands
         this.playerHands = [new Hand()];
         this.playerHands[0].bet = this.currentBet;
         this.dealerHand.clear();
         this.currentHandIndex = 0;
 
-        // Deal cards: player, dealer, player, dealer (face down)
+        // Deal cards
         await this.dealCardToHand(this.currentHand, true);
         await this.dealCardToHand(this.dealerHand, true);
         await this.dealCardToHand(this.currentHand, true);
-        await this.dealCardToHand(this.dealerHand, false); // Hole card face down
+        await this.dealCardToHand(this.dealerHand, false);
 
-        // Check for dealer blackjack if showing Ace or 10
         const dealerUpCard = this.dealerHand.cards[0];
 
+        // Check for insurance
         if (dealerUpCard.isAce && this.settings.insuranceAllowed) {
-            // Offer insurance
-            this.state = GameState.PLAYER_TURN;
+            this.state = GameState.INSURANCE;
             this.notifyStateChange();
+            if (this.onInsurancePrompt) {
+                this.onInsurancePrompt(this.currentHand.bet / 2);
+            }
             return;
         }
 
@@ -157,29 +146,71 @@ class BlackjackGame {
             return;
         }
 
-        // Start player turn
         this.state = GameState.PLAYER_TURN;
         this.notifyStateChange();
     }
 
-    /**
-     * Deal a card to a hand
-     * @param {Hand} hand - Target hand
-     * @param {boolean} faceUp - Whether card is face up
-     */
+    async handleInsuranceDecision(takeInsurance) {
+        if (this.state !== GameState.INSURANCE) return;
+
+        if (takeInsurance) {
+            const insuranceAmount = this.currentHand.bet / 2;
+            if (insuranceAmount <= this.balance) {
+                this.balance -= insuranceAmount;
+                this.currentHand.insuranceBet = insuranceAmount;
+                this.notifyBalanceChange();
+            }
+        }
+
+        // Check for dealer blackjack
+        if (this.dealerHand.isBlackjack()) {
+            this.dealerHand.cards[1].faceUp = true;
+            this.deck.updateCount(this.dealerHand.cards[1]);
+            this.notifyCountUpdate();
+
+            if (this.currentHand.insuranceBet > 0) {
+                this.balance += this.currentHand.insuranceBet * 3;
+                this.notifyBalanceChange();
+            }
+
+            if (this.currentHand.isBlackjack()) {
+                this.balance += this.currentHand.bet;
+                this.stats.handsPushed++;
+                this.notifyResult(ResultType.PUSH, 0);
+            } else {
+                this.stats.handsLost++;
+                this.stats.netProfit -= this.currentHand.bet;
+                this.notifyResult(ResultType.LOSE, -this.currentHand.bet);
+            }
+            this.endRound();
+            return;
+        }
+
+        // No dealer blackjack - lost insurance bet
+        if (this.currentHand.isBlackjack()) {
+            await this.handleBlackjack();
+            return;
+        }
+
+        this.state = GameState.PLAYER_TURN;
+        this.notifyStateChange();
+    }
+
     async dealCardToHand(hand, faceUp = true) {
         const card = this.deck.deal();
         card.faceUp = faceUp;
         hand.addCard(card);
+
+        if (faceUp) {
+            this.deck.updateCount(card);
+            this.notifyCountUpdate();
+        }
 
         if (this.onCardDealt) {
             await this.onCardDealt(card, hand);
         }
     }
 
-    /**
-     * Player hits
-     */
     async hit() {
         if (this.state !== GameState.PLAYER_TURN) return;
 
@@ -187,8 +218,8 @@ class BlackjackGame {
 
         if (this.currentHand.isBusted) {
             await this.handleHandComplete();
-        } else if (this.currentHand.getValue() === 21) {
-            // Auto-stand on 21 for faster, more rewarding gameplay
+        } else if (this.currentHand.getValue() === 21 && this.settings.autoStandOn21) {
+            // Auto-stand on 21 if setting is enabled
             this.currentHand.isStood = true;
             await this.handleHandComplete();
         }
@@ -196,28 +227,18 @@ class BlackjackGame {
         this.notifyStateChange();
     }
 
-    /**
-     * Player stands
-     */
     async stand() {
         if (this.state !== GameState.PLAYER_TURN) return;
-
         this.currentHand.isStood = true;
         await this.handleHandComplete();
     }
 
-    /**
-     * Player doubles down
-     */
     async double() {
         if (this.state !== GameState.PLAYER_TURN) return;
         if (!this.currentHand.canDouble()) return;
 
         const additionalBet = this.currentHand.bet;
-        if (additionalBet > this.balance) {
-            console.warn('Insufficient balance to double');
-            return;
-        }
+        if (additionalBet > this.balance) return;
 
         this.balance -= additionalBet;
         this.currentHand.bet *= 2;
@@ -226,116 +247,59 @@ class BlackjackGame {
 
         this.notifyBalanceChange();
 
-        // Deal one card and stand
         await this.dealCardToHand(this.currentHand, true);
         this.currentHand.isStood = true;
 
         await this.handleHandComplete();
     }
 
-    /**
-     * Player splits
-     */
     async split() {
         if (this.state !== GameState.PLAYER_TURN) return;
         if (!this.currentHand.canSplit()) return;
 
         const additionalBet = this.currentHand.bet;
-        if (additionalBet > this.balance) {
-            console.warn('Insufficient balance to split');
-            return;
-        }
+        if (additionalBet > this.balance) return;
 
         this.balance -= additionalBet;
         this.stats.totalWagered += additionalBet;
 
-        // Create new hand with second card
         const newHand = new Hand();
         newHand.bet = additionalBet;
         newHand.isSplit = true;
         newHand.addCard(this.currentHand.cards.pop());
 
-        // Mark current hand as split
         this.currentHand.isSplit = true;
-
-        // Add new hand
         this.playerHands.splice(this.currentHandIndex + 1, 0, newHand);
 
-        // Deal a card to each split hand
         await this.dealCardToHand(this.currentHand, true);
 
         this.notifyBalanceChange();
         this.notifyStateChange();
     }
 
-    /**
-     * Player surrenders
-     */
     async surrender() {
         if (this.state !== GameState.PLAYER_TURN) return;
         if (this.currentHand.cards.length !== 2) return;
         if (!this.settings.surrenderAllowed) return;
 
         this.currentHand.isSurrendered = true;
-
-        // Return half the bet
         const returnAmount = this.currentHand.bet / 2;
         this.balance += returnAmount;
 
         this.notifyBalanceChange();
-
         await this.handleHandComplete();
     }
 
-    /**
-     * Player takes insurance
-     * @param {boolean} take - Whether to take insurance
-     */
-    async insurance(take) {
-        if (!take) {
-            // Check for dealer blackjack
-            if (this.dealerHand.isBlackjack()) {
-                await this.handleDealerBlackjack();
-                return;
-            }
-            // Continue normal play
-            return;
-        }
-
-        const insuranceAmount = this.currentHand.bet / 2;
-        if (insuranceAmount > this.balance) {
-            console.warn('Insufficient balance for insurance');
-            return;
-        }
-
-        this.balance -= insuranceAmount;
-        this.currentHand.insuranceBet = insuranceAmount;
-
-        this.notifyBalanceChange();
-
-        // Check for dealer blackjack
-        if (this.dealerHand.isBlackjack()) {
-            // Insurance pays 2:1
-            this.balance += insuranceAmount * 3;
-            this.notifyBalanceChange();
-            await this.handleDealerBlackjack();
-        }
-    }
-
-    /**
-     * Handle player blackjack
-     */
     async handleBlackjack() {
-        // Reveal dealer hole card
         this.dealerHand.cards[1].faceUp = true;
+        this.deck.updateCount(this.dealerHand.cards[1]);
+        this.notifyCountUpdate();
 
         if (this.dealerHand.isBlackjack()) {
-            // Push
             this.balance += this.currentHand.bet;
             this.stats.handsPushed++;
             this.notifyResult(ResultType.PUSH, 0);
         } else {
-            // Player blackjack wins
             const winnings = this.currentHand.bet * (1 + this.settings.blackjackPays);
             this.balance += winnings;
             this.stats.handsWon++;
@@ -348,38 +312,10 @@ class BlackjackGame {
         this.endRound();
     }
 
-    /**
-     * Handle dealer blackjack
-     */
-    async handleDealerBlackjack() {
-        // Reveal dealer hole card
-        this.dealerHand.cards[1].faceUp = true;
-
-        // Player loses (unless they also have blackjack)
-        for (const hand of this.playerHands) {
-            if (hand.isBlackjack()) {
-                this.balance += hand.bet;
-                this.stats.handsPushed++;
-            } else {
-                this.stats.handsLost++;
-                this.stats.netProfit -= hand.bet;
-            }
-        }
-
-        this.notifyBalanceChange();
-        this.notifyResult(ResultType.LOSE, 0);
-        this.endRound();
-    }
-
-    /**
-     * Handle completion of a player hand
-     */
     async handleHandComplete() {
-        // Move to next split hand if any
         if (this.currentHandIndex < this.playerHands.length - 1) {
             this.currentHandIndex++;
 
-            // Deal a card to the new hand if needed (after split)
             if (this.currentHand.cards.length === 1) {
                 await this.dealCardToHand(this.currentHand, true);
             }
@@ -388,20 +324,16 @@ class BlackjackGame {
             return;
         }
 
-        // All player hands complete, dealer turn
         await this.dealerTurn();
     }
 
-    /**
-     * Dealer plays their hand
-     */
     async dealerTurn() {
-        // Check if all player hands busted or surrendered
         const allBustedOrSurrendered = this.playerHands.every(h => h.isBusted || h.isSurrendered);
 
         if (allBustedOrSurrendered) {
-            // No need for dealer to play
             this.dealerHand.cards[1].faceUp = true;
+            this.deck.updateCount(this.dealerHand.cards[1]);
+            this.notifyCountUpdate();
             this.resolveHands();
             return;
         }
@@ -409,46 +341,36 @@ class BlackjackGame {
         this.state = GameState.DEALER_TURN;
         this.notifyStateChange();
 
-        // Reveal hole card
         this.dealerHand.cards[1].faceUp = true;
+        this.deck.updateCount(this.dealerHand.cards[1]);
+        this.notifyCountUpdate();
+
         if (this.onCardDealt) {
             await this.onCardDealt(this.dealerHand.cards[1], this.dealerHand, true);
         }
 
-        // Dealer hits until 17 (or soft 17 if setting enabled)
         while (this.shouldDealerHit()) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, CONFIG.DEALER_TURN_DELAY));
             await this.dealCardToHand(this.dealerHand, true);
         }
 
         this.resolveHands();
     }
 
-    /**
-     * Check if dealer should hit
-     * @returns {boolean}
-     */
     shouldDealerHit() {
         const value = this.dealerHand.getValue();
-
         if (value < 17) return true;
-
         if (value === 17 && this.dealerHand.isSoft() && this.settings.dealerHitsSoft17) {
             return true;
         }
-
         return false;
     }
 
-    /**
-     * Resolve all hands and calculate payouts
-     */
     resolveHands() {
         this.state = GameState.PAYOUT;
 
         const dealerValue = this.dealerHand.getValue();
         const dealerBusted = this.dealerHand.isBusted;
-
         let totalWinnings = 0;
 
         for (const hand of this.playerHands) {
@@ -499,17 +421,11 @@ class BlackjackGame {
         this.endRound();
     }
 
-    /**
-     * End the current round
-     */
     endRound() {
         this.state = GameState.GAME_OVER;
         this.notifyStateChange();
     }
 
-    /**
-     * Start a new round
-     */
     newRound() {
         this.playerHands = [new Hand()];
         this.dealerHand.clear();
@@ -519,27 +435,18 @@ class BlackjackGame {
         this.notifyStateChange();
     }
 
-    /**
-     * Reshuffle the deck
-     */
     reshuffle() {
         this.deck.reshuffle();
-        this.notifyReshuffle();
+        if (this.onReshuffle) this.onReshuffle();
     }
 
-    /**
-     * Add chips to balance (for practice)
-     * @param {number} amount
-     */
     addChips(amount) {
         this.balance += amount;
         this.notifyBalanceChange();
         this.saveBalance();
     }
 
-    /**
-     * Check if player can perform action
-     */
+    // Action checks
     canHit() {
         return this.state === GameState.PLAYER_TURN &&
             !this.currentHand.isStood &&
@@ -563,7 +470,7 @@ class BlackjackGame {
         if (this.state !== GameState.PLAYER_TURN) return false;
         if (!this.currentHand.canSplit()) return false;
         if (this.currentHand.bet > this.balance) return false;
-        if (this.playerHands.length >= 4) return false; // Max 4 hands
+        if (this.playerHands.length >= 4) return false;
         return true;
     }
 
@@ -574,10 +481,6 @@ class BlackjackGame {
             !this.currentHand.isSplit;
     }
 
-    /**
-     * Update game settings
-     * @param {Object} newSettings
-     */
     updateSettings(newSettings) {
         this.settings = { ...this.settings, ...newSettings };
 
@@ -585,13 +488,13 @@ class BlackjackGame {
             this.deck.setDeckCount(newSettings.deckCount);
         }
 
+        if (newSettings.countingSystem !== undefined) {
+            this.deck.setCountingSystem(newSettings.countingSystem);
+        }
+
         this.saveSettings();
     }
 
-    /**
-     * Get the basic strategy recommendation
-     * @returns {string} Recommended action
-     */
     getStrategyHint() {
         if (this.state !== GameState.PLAYER_TURN) return null;
         return getBasicStrategyRecommendation(
@@ -603,7 +506,7 @@ class BlackjackGame {
         );
     }
 
-    // Notification helpers
+    // Notifications
     notifyStateChange() {
         if (this.onStateChange) this.onStateChange(this.state);
     }
@@ -616,64 +519,39 @@ class BlackjackGame {
         if (this.onHandResult) this.onHandResult(result, amount);
     }
 
-    notifyReshuffle() {
-        console.log('🔄 Deck reshuffled');
+    notifyCountUpdate() {
+        if (this.onCountUpdate && this.settings.countingEnabled) {
+            this.onCountUpdate(this.deck.getRunningCount(), this.deck.getTrueCount());
+        }
     }
 
-    // ===========================================
-    // Data Persistence with 1-Week Expiration
-    // ===========================================
-
-    // Expiration time: 1 week in milliseconds
-    static EXPIRATION_MS = 7 * 24 * 60 * 60 * 1000;
-
-    /**
-     * Save data to localStorage with a timestamp
-     * @param {string} key - Storage key
-     * @param {any} data - Data to store
-     */
+    // === Persistence ===
     saveWithTimestamp(key, data) {
         try {
-            const wrapper = {
-                timestamp: Date.now(),
-                data: data
-            };
+            const wrapper = { timestamp: Date.now(), data: data };
             localStorage.setItem(key, JSON.stringify(wrapper));
         } catch (e) {
             console.warn(`Could not save ${key}:`, e);
         }
     }
 
-    /**
-     * Load data from localStorage with expiration check
-     * @param {string} key - Storage key
-     * @returns {any|null} - Stored data or null if expired/missing
-     */
     loadWithExpiration(key) {
         try {
             const saved = localStorage.getItem(key);
             if (!saved) return null;
 
             const wrapper = JSON.parse(saved);
-
-            // Check if data has expired (older than 1 week)
-            if (!wrapper.timestamp || Date.now() - wrapper.timestamp > BlackjackGame.EXPIRATION_MS) {
-                console.log(`${key} has expired, clearing stored data`);
+            if (!wrapper.timestamp || Date.now() - wrapper.timestamp > CONFIG.EXPIRATION_MS) {
                 localStorage.removeItem(key);
                 return null;
             }
 
             return wrapper.data;
         } catch (e) {
-            console.warn(`Could not load ${key}:`, e);
             return null;
         }
     }
 
-    /**
-     * Refresh the timestamp on stored data (extends expiration)
-     * @param {string} key - Storage key
-     */
     refreshTimestamp(key) {
         try {
             const saved = localStorage.getItem(key);
@@ -682,37 +560,23 @@ class BlackjackGame {
                 wrapper.timestamp = Date.now();
                 localStorage.setItem(key, JSON.stringify(wrapper));
             }
-        } catch (e) {
-            console.warn(`Could not refresh timestamp for ${key}:`, e);
-        }
+        } catch (e) { }
     }
 
-    // Stats persistence
-    saveStats() {
-        this.saveWithTimestamp('blackjack_stats', this.stats);
-    }
-
+    saveStats() { this.saveWithTimestamp('blackjack_stats', this.stats); }
     loadStats() {
         const saved = this.loadWithExpiration('blackjack_stats');
-        if (saved) {
-            this.stats = { ...this.stats, ...saved };
-        }
+        if (saved) this.stats = { ...this.stats, ...saved };
     }
 
     resetStats() {
         this.stats = {
-            handsPlayed: 0,
-            handsWon: 0,
-            handsLost: 0,
-            handsPushed: 0,
-            blackjacks: 0,
-            totalWagered: 0,
-            netProfit: 0
+            handsPlayed: 0, handsWon: 0, handsLost: 0, handsPushed: 0,
+            blackjacks: 0, totalWagered: 0, netProfit: 0
         };
         this.saveStats();
     }
 
-    // Comprehensive data persistence
     saveAllData() {
         this.saveBalance();
         this.saveSettings();
@@ -723,54 +587,41 @@ class BlackjackGame {
         this.loadBalance();
         this.loadSettings();
         this.loadStats();
-        // Refresh all timestamps on load to extend expiration
         this.refreshTimestamp('blackjack_balance');
         this.refreshTimestamp('blackjack_settings');
         this.refreshTimestamp('blackjack_stats');
     }
 
-    saveBalance() {
-        this.saveWithTimestamp('blackjack_balance', this.balance);
-    }
-
+    saveBalance() { this.saveWithTimestamp('blackjack_balance', this.balance); }
     loadBalance() {
         const saved = this.loadWithExpiration('blackjack_balance');
-        if (saved !== null) {
-            this.balance = saved;
-        }
+        if (saved !== null) this.balance = saved;
     }
 
-    saveSettings() {
-        this.saveWithTimestamp('blackjack_settings', this.settings);
-    }
-
+    saveSettings() { this.saveWithTimestamp('blackjack_settings', this.settings); }
     loadSettings() {
         const saved = this.loadWithExpiration('blackjack_settings');
         if (saved) {
             this.settings = { ...this.settings, ...saved };
-            // Apply deck count
-            if (saved.deckCount) {
-                this.deck.setDeckCount(saved.deckCount);
-            }
+            if (saved.deckCount) this.deck.setDeckCount(saved.deckCount);
+            if (saved.countingSystem) this.deck.setCountingSystem(saved.countingSystem);
         }
     }
 }
 
 /**
- * Basic strategy lookup
+ * Basic strategy
  */
 function getBasicStrategyRecommendation(playerHand, dealerUpCard, canDouble, canSplit, canSurrender) {
     const playerValue = playerHand.getValue();
-    const dealerValue = dealerUpCard.value === 11 ? 11 : dealerUpCard.value; // Ace as 11
+    const dealerValue = dealerUpCard.value === 11 ? 11 : dealerUpCard.value;
     const isSoft = playerHand.isSoft();
     const isPair = playerHand.canSplit();
 
-    // Pair splitting
     if (isPair && canSplit) {
         const pairRank = playerHand.cards[0].rank;
         const pairStrategy = {
-            'A': 'SPLIT',
-            '8': 'SPLIT',
+            'A': 'SPLIT', '8': 'SPLIT',
             '2': dealerValue <= 7 ? 'SPLIT' : 'HIT',
             '3': dealerValue <= 7 ? 'SPLIT' : 'HIT',
             '4': (dealerValue === 5 || dealerValue === 6) ? 'SPLIT' : 'HIT',
@@ -778,15 +629,11 @@ function getBasicStrategyRecommendation(playerHand, dealerUpCard, canDouble, can
             '6': dealerValue <= 6 ? 'SPLIT' : 'HIT',
             '7': dealerValue <= 7 ? 'SPLIT' : 'HIT',
             '9': [7, 10, 11].includes(dealerValue) ? 'STAND' : 'SPLIT',
-            '10': 'STAND',
-            'J': 'STAND',
-            'Q': 'STAND',
-            'K': 'STAND'
+            '10': 'STAND', 'J': 'STAND', 'Q': 'STAND', 'K': 'STAND'
         };
         if (pairStrategy[pairRank]) return pairStrategy[pairRank];
     }
 
-    // Soft totals
     if (isSoft) {
         if (playerValue >= 19) return 'STAND';
         if (playerValue === 18) {
@@ -809,7 +656,6 @@ function getBasicStrategyRecommendation(playerHand, dealerUpCard, canDouble, can
         return 'HIT';
     }
 
-    // Hard totals
     if (playerValue >= 17) return 'STAND';
 
     if (playerValue >= 13 && playerValue <= 16) {
@@ -824,15 +670,11 @@ function getBasicStrategyRecommendation(playerHand, dealerUpCard, canDouble, can
         return 'HIT';
     }
 
-    if (playerValue === 11) {
-        return canDouble ? 'DOUBLE' : 'HIT';
-    }
-
+    if (playerValue === 11) return canDouble ? 'DOUBLE' : 'HIT';
     if (playerValue === 10) {
         if (dealerValue <= 9 && canDouble) return 'DOUBLE';
         return 'HIT';
     }
-
     if (playerValue === 9) {
         if (dealerValue >= 3 && dealerValue <= 6 && canDouble) return 'DOUBLE';
         return 'HIT';
@@ -841,8 +683,9 @@ function getBasicStrategyRecommendation(playerHand, dealerUpCard, canDouble, can
     return 'HIT';
 }
 
-// Export
+// === Global Exports ===
 window.BlackjackGame = BlackjackGame;
 window.GameState = GameState;
 window.ResultType = ResultType;
+window.CONFIG = CONFIG;
 window.getBasicStrategyRecommendation = getBasicStrategyRecommendation;

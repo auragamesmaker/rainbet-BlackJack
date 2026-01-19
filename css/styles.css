@@ -12,35 +12,62 @@
 }
 
 :root {
+    /* === Background Colors === */
     --bg-main: #080810;
     --bg-panel: #0c0c14;
     --bg-card: #13131d;
     --bg-elevated: #1a1a26;
     --bg-hover: rgba(255, 255, 255, 0.05);
 
-    --text-1: #ffffff;
-    --text-2: #9ca3af;
-    --text-3: #6b7280;
+    /* === Text Colors === */
+    --text-primary: #ffffff;
+    --text-secondary: #9ca3af;
+    --text-muted: #6b7280;
+    --text-1: var(--text-primary);
+    --text-2: var(--text-secondary);
+    --text-3: var(--text-muted);
 
+    /* === Accent Colors === */
     --accent: #00d26a;
     --accent-dim: rgba(0, 210, 106, 0.12);
     --accent-glow: rgba(0, 210, 106, 0.4);
     --accent-hover: #00e777;
 
+    /* === Semantic Result Colors === */
+    --color-win: #00d26a;
+    --color-win-glow: rgba(0, 210, 106, 0.4);
+    --color-lose: #ef4444;
+    --color-lose-glow: rgba(239, 68, 68, 0.4);
+    --color-push: #6b7280;
+    --color-push-glow: rgba(107, 114, 128, 0.3);
+    --color-blackjack: #fbbf24;
+    --color-blackjack-glow: rgba(251, 191, 36, 0.5);
+
+    /* === Status Colors === */
     --success: #00d26a;
     --warning: #f59e0b;
     --error: #ef4444;
     --info: #3b82f6;
 
+    /* === Border Colors === */
     --border: rgba(255, 255, 255, 0.08);
     --border-glow: rgba(0, 210, 106, 0.3);
 
-    --glass: rgba(255, 255, 255, 0.03);
-    --glass-border: rgba(255, 255, 255, 0.08);
+    /* === Glass Effect - Enhanced Glassmorphism === */
+    --glass: rgba(255, 255, 255, 0.04);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-blur: blur(20px);
+    --glass-saturate: saturate(180%);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --glass-inner-glow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    --glass-strong: rgba(255, 255, 255, 0.08);
+    --glass-subtle: rgba(255, 255, 255, 0.02);
 
+    /* === Card Colors === */
     --card-red: #ef4444;
     --card-black: #1f2937;
 
+    /* === Chip Colors === */
     --chip-1: #6b7280;
     --chip-5: #ef4444;
     --chip-25: #22c55e;
@@ -48,12 +75,33 @@
     --chip-500: #8b5cf6;
     --chip-1000: #eab308;
 
+    /* === Spacing & Sizing Constants === */
     --radius: 8px;
     --radius-lg: 12px;
+    --radius-xl: 16px;
     --transition: 0.15s ease;
-}
+    --transition-slow: 0.3s ease;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    /* === Animation Timing === */
+    --animation-card-deal: 0.25s;
+    --animation-result: 0.5s;
+    --animation-smooth: ease-out;
+
+    /* === Z-Index Layers === */
+    --z-cards: 1;
+    --z-controls: 10;
+    --z-overlay: 100;
+    --z-modal: 1000;
+    --z-toast: 2000;
+
+    /* === Touch Target Sizes === */
+    --touch-target-min: 44px;
+    --chip-stack-max: 8;
+
+    /* === Typography === */
+    --font-primary: 'Outfit', sans-serif;
+    --font-display: 'Space Grotesk', 'Outfit', sans-serif;
+}
 
 html {
     font-size: 14px;
@@ -62,10 +110,23 @@ html {
 body {
     height: 100vh;
     height: 100dvh;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-primary);
     background: var(--bg-main);
     color: var(--text-1);
     overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: default;
+    letter-spacing: 0.01em;
+}
+
+/* Allow text selection in inputs */
+input,
+textarea,
+select {
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
 }
 
 /* ============================================
@@ -117,8 +178,10 @@ body {
 }
 
 .logo-text {
-    font-size: 1rem;
+    font-family: var(--font-display);
+    font-size: 1.125rem;
     font-weight: 700;
+    letter-spacing: 0.02em;
 }
 
 .stats-row {
@@ -144,6 +207,7 @@ body {
 }
 
 .stat-value {
+    font-family: var(--font-display);
     font-size: 0.75rem;
     font-weight: 600;
 }
@@ -194,11 +258,13 @@ body {
 
 .game-layout {
     flex: 1;
-    display: grid;
-    grid-template-columns: 180px 1fr 180px;
-    gap: 0;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
     min-height: 0;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 /* Side Panels - Glassmorphism */
@@ -238,6 +304,7 @@ body {
 
 /* Bet Display */
 .bet-display {
+    font-family: var(--font-display);
     font-size: 1.5rem;
     font-weight: 700;
     text-align: center;
@@ -273,7 +340,6 @@ body {
     box-shadow: 0 0 8px var(--accent-dim);
 }
 
-/* Chips Grid */
 .chips-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -286,18 +352,27 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.5rem;
+    /* Dynamic font scaling - adapts to container */
+    font-family: var(--font-display);
+    font-size: clamp(0.4rem, 1.5vw, 0.625rem);
     font-weight: 700;
     color: #fff;
     cursor: pointer;
-    border: 2px solid rgba(255, 255, 255, 0.25);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     transition: all var(--transition);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    min-width: 32px;
+    min-height: 32px;
 }
 
 .chip:hover {
     transform: scale(1.15);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    box-shadow:
+        0 4px 16px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
 }
 
 .chip:active {
@@ -327,45 +402,63 @@ body {
 .chip-1000 {
     background: linear-gradient(145deg, #fcd34d, #ca8a04);
     color: #000;
+    text-shadow: none;
 }
 
 /* Shoe Section */
 .shoe-section {
     background: transparent;
-    padding: 0;
-    border: none;
-    backdrop-filter: none;
+    padding: 0.625rem;
 }
 
-.shoe-row {
+.shoe-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin-bottom: 0.5rem;
+}
+
+.shoe-stat {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     font-size: 0.625rem;
-    color: var(--text-3);
-    padding: 0.25rem 0;
 }
 
-.shoe-row span:last-child {
+.shoe-stat-label {
+    color: var(--text-3);
+}
+
+.shoe-stat-value {
     color: var(--text-2);
     font-weight: 600;
+    font-family: var(--font-display);
 }
 
 .reshuffle-btn {
     width: 100%;
-    padding: 0.375rem;
-    margin-top: 0.375rem;
+    padding: 0.5rem 0.625rem;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 4px;
+    border-radius: 6px;
     color: var(--text-3);
-    font-size: 0.5625rem;
+    font-size: 0.625rem;
     cursor: pointer;
     font-family: inherit;
     transition: all var(--transition);
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.375rem;
+    gap: 0.5rem;
+}
+
+.reshuffle-btn i {
+    font-size: 0.625rem;
+    line-height: 1;
+}
+
+.reshuffle-btn span {
+    line-height: 1;
 }
 
 .reshuffle-btn:hover:not(:disabled) {
@@ -376,6 +469,7 @@ body {
 
 .reshuffle-btn:disabled {
     opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* Right Panel Stats */
@@ -413,7 +507,830 @@ body {
 }
 
 /* ============================================
-   Game Area - Premium Table Surface
+   Compact Header - Bankroll Display
+   ============================================ */
+
+.bankroll-display {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 1rem;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border);
+}
+
+.bankroll-amount {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-shadow: 0 0 15px var(--accent-dim);
+}
+
+.bankroll-stat {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    cursor: default;
+}
+
+.bankroll-stat.win {
+    color: var(--text-secondary);
+}
+
+.bankroll-stat.profit {
+    color: var(--success);
+}
+
+.bankroll-stat.profit.negative {
+    color: var(--error);
+}
+
+.bankroll-stat.hands::before {
+    content: "H: ";
+    color: var(--text-muted);
+}
+
+/* Hide on mobile utility */
+@media (max-width: 700px) {
+    .hide-mobile {
+        display: none !important;
+    }
+}
+
+/* ============================================
+   Game Main & Container Layout
+   ============================================ */
+
+.game-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 0;
+    overflow: visible;
+    background: var(--bg-main);
+    width: 100%;
+}
+
+.game-container {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+    padding: 0.75rem 1rem;
+    position: relative;
+    min-height: 0;
+    overflow: visible;
+}
+
+/* ============================================
+   Game Table - Three Zone Layout
+   ============================================ */
+
+.game-table {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    flex: 1;
+    width: 100%;
+    padding: 1rem 0;
+    min-height: 350px;
+    gap: 1rem;
+    position: relative;
+}
+
+.table-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    flex: 0 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+.zone-label {
+    font-family: var(--font-display);
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+.dealer-zone {
+    min-height: 90px;
+    justify-content: flex-start;
+    gap: 0.5rem;
+}
+
+.dealer-zone .zone-label {
+    order: -1;
+    margin-bottom: 0.25rem;
+}
+
+.dealer-zone .cards-area {
+    min-height: 50px;
+}
+
+.dealer-zone .hand-badge {
+    flex-shrink: 0;
+}
+
+.player-zone {
+    min-height: 90px;
+    justify-content: flex-end;
+    gap: 0.5rem;
+}
+
+.player-zone .zone-label {
+    flex-shrink: 0;
+    margin-top: 0.25rem;
+}
+
+.player-zone .cards-area {
+    min-height: 50px;
+}
+
+.table-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    flex: 0 0 auto;
+    min-height: 120px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Hand Badge - Value Display */
+.hand-badge {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    background: var(--bg-elevated);
+    border-radius: 2rem;
+    min-width: 2.5rem;
+    text-align: center;
+    border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    transition: all var(--transition);
+    flex-shrink: 0;
+    color: var(--text-primary);
+}
+
+.hand-badge.blackjack {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.hand-badge.bust {
+    background: var(--error);
+    color: #fff;
+    border-color: var(--error);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.3);
+}
+
+/* Bet Indicator */
+.bet-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.125rem;
+    padding: 0.5rem 1.25rem;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.bet-indicator-label {
+    font-size: 0.5rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.bet-indicator-value {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: var(--accent);
+}
+
+/* Hint Badge */
+.hint-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--accent-dim);
+    border: 1px solid var(--accent);
+    border-radius: 2rem;
+    color: var(--accent);
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    font-weight: 700;
+    box-shadow: 0 0 15px var(--accent-dim);
+    animation: hint-pulse 2s ease-in-out infinite;
+}
+
+@keyframes hint-pulse {
+    0%, 100% { box-shadow: 0 0 15px var(--accent-dim); }
+    50% { box-shadow: 0 0 25px var(--accent-glow); }
+}
+
+.hint-badge i {
+    font-size: 0.75rem;
+}
+
+/* Betting Prompt */
+.betting-prompt {
+    font-family: var(--font-display);
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    opacity: 0.6;
+    transition: opacity var(--transition);
+    flex-shrink: 0;
+}
+
+/* Cards Area */
+.cards-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 4.5rem;
+    transition: all var(--transition);
+    gap: 0.125rem;
+}
+
+.hand-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Ensure badge is always visible */
+.hand-wrapper .hand-badge {
+    flex-shrink: 0;
+}
+
+/* Player hands container */
+.player-hands-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    width: 100%;
+}
+
+/* Deck Info */
+.deck-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius);
+    border: 1px solid var(--glass-border);
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 50;
+    pointer-events: auto;
+}
+
+/* ============================================
+   State-Based Visibility System
+   ============================================ */
+
+/* === Betting Phase === */
+/* Control visibility (in game-controls, which is child of game-main) */
+.game-main[data-state="betting"] .action-controls {
+    display: none !important;
+}
+
+.game-main[data-state="betting"] .betting-controls {
+    display: flex !important;
+}
+
+/* Game table elements (in game-container) */
+.game-container[data-state="betting"] .hand-badge {
+    display: none !important;
+}
+
+.game-container[data-state="betting"] .zone-label {
+    display: none !important;
+}
+
+.game-container[data-state="betting"] .hint-badge {
+    display: none !important;
+}
+
+.game-container[data-state="betting"] .betting-prompt {
+    display: block;
+}
+
+/* Hide betting prompt when there's a bet */
+.game-container[data-state="betting"].has-bet .betting-prompt {
+    display: none;
+}
+
+/* === Playing Phase === */
+/* Control visibility */
+.game-main[data-state="playing"] .betting-controls {
+    display: none !important;
+}
+
+.game-main[data-state="playing"] .action-controls {
+    display: flex !important;
+}
+
+/* Game table elements */
+.game-container[data-state="playing"] .bet-indicator {
+    transform: scale(0.8);
+    opacity: 0.7;
+}
+
+.game-container[data-state="playing"] .chip-stacks-container {
+    display: none !important;
+}
+
+.game-container[data-state="playing"] .betting-prompt {
+    display: none !important;
+}
+
+.game-container[data-state="playing"] .hand-badge {
+    opacity: 1;
+}
+
+/* === Result Phase === */
+/* Control visibility */
+.game-main[data-state="result"] .betting-controls {
+    display: none !important;
+}
+
+.game-main[data-state="result"] .action-controls {
+    display: none !important;
+}
+
+/* Game table elements */
+.game-container[data-state="result"] .bet-indicator {
+    transform: scale(0.8);
+    opacity: 0.7;
+}
+
+.game-container[data-state="result"] .chip-stacks-container {
+    display: none !important;
+}
+
+.game-container[data-state="result"] .betting-prompt {
+    display: none !important;
+}
+
+/* ============================================
+   Unified Bottom Control Bar
+   ============================================ */
+
+.game-controls {
+    width: 100%;
+    max-width: 900px;
+    padding: 1rem;
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    background: linear-gradient(to top, var(--bg-main), var(--bg-panel));
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    z-index: var(--z-controls);
+}
+
+.betting-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.chip-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.chip-row .chip-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.chip-row .chip-btn:hover {
+    transform: translateY(-4px) scale(1.1);
+}
+
+.chip-row .chip-btn:active {
+    transform: scale(0.95);
+}
+
+.chip-row .chip-modern {
+    width: 48px;
+    height: 48px;
+    font-size: 0.75rem;
+}
+
+.betting-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.bet-action-btn {
+    width: 44px;
+    height: 44px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition);
+    font-family: inherit;
+    font-weight: 600;
+}
+
+.bet-action-btn:hover {
+    background: var(--bg-hover);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.bet-action-btn.bet-action-max {
+    font-size: 0.625rem;
+    font-weight: 700;
+}
+
+.betting-controls .btn-deal {
+    padding: 0.75rem 2rem;
+    background: linear-gradient(145deg, var(--accent-hover), var(--accent));
+    border: none;
+    border-radius: var(--radius-lg);
+    color: #000;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px var(--accent-glow);
+    margin-left: 0.5rem;
+}
+
+.betting-controls .btn-deal:hover:not(:disabled) {
+    background: linear-gradient(145deg, #00f080, var(--accent-hover));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 28px var(--accent-glow);
+}
+
+.betting-controls .btn-deal:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Action Controls */
+.action-controls {
+    display: none;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+/* ============================================
+   State Transition Animations
+   ============================================ */
+
+/* Smooth transitions for state changes */
+.betting-controls,
+.action-controls {
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.bet-indicator {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.hand-badge {
+    transition: opacity 0.25s ease, transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.betting-prompt {
+    transition: opacity 0.2s ease;
+}
+
+.chip-stacks-container {
+    transition: opacity 0.25s ease;
+}
+
+/* Control bar slide-up animation */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.game-main[data-state="betting"] .betting-controls {
+    animation: slideUp 0.3s ease forwards;
+}
+
+.game-main[data-state="playing"] .action-controls {
+    animation: slideUp 0.3s ease forwards;
+}
+
+/* Card deal stagger animation enhancement */
+.cards-area .card {
+    animation-fill-mode: backwards;
+}
+
+.cards-area .card:nth-child(1) { animation-delay: 0s; }
+.cards-area .card:nth-child(2) { animation-delay: 0.1s; }
+.cards-area .card:nth-child(3) { animation-delay: 0.2s; }
+.cards-area .card:nth-child(4) { animation-delay: 0.3s; }
+.cards-area .card:nth-child(5) { animation-delay: 0.4s; }
+.cards-area .card:nth-child(6) { animation-delay: 0.5s; }
+
+/* ============================================
+   New Layout Mobile Responsiveness
+   ============================================ */
+
+@media (max-width: 700px) {
+    /* Header bankroll display */
+    .bankroll-display {
+        padding: 0.375rem 0.75rem;
+        gap: 0.5rem;
+    }
+    
+    .bankroll-amount {
+        font-size: 1rem;
+    }
+    
+    .bankroll-stat {
+        font-size: 0.5625rem;
+        padding: 0.1875rem 0.375rem;
+    }
+    
+    .bankroll-stat.hands {
+        display: none;
+    }
+    
+    /* Game container */
+    .game-container {
+        padding: 0.5rem;
+    }
+    
+    /* Game table zones */
+    .game-table {
+        padding: 0.5rem 0;
+        min-height: 280px;
+        gap: 0.75rem;
+    }
+    
+    .zone-label {
+        font-size: 0.5625rem;
+        letter-spacing: 1.5px;
+    }
+    
+    .dealer-zone,
+    .player-zone {
+        min-height: 70px;
+    }
+    
+    .hand-badge {
+        font-size: 0.8125rem;
+        padding: 0.1875rem 0.625rem;
+        min-width: 2.25rem;
+    }
+    
+    .bet-indicator {
+        padding: 0.375rem 0.875rem;
+    }
+    
+    .bet-indicator-label {
+        font-size: 0.4375rem;
+    }
+    
+    .bet-indicator-value {
+        font-size: 1rem;
+    }
+    
+    .hint-badge {
+        font-size: 0.6875rem;
+        padding: 0.3125rem 0.625rem;
+    }
+    
+    .betting-prompt {
+        font-size: 0.5625rem;
+    }
+    
+    .table-center {
+        min-height: 80px;
+        padding: 0.375rem 0;
+        gap: 0.5rem;
+    }
+    
+    /* Control bar */
+    .game-controls {
+        padding: 0.75rem;
+        padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+    }
+    
+    .chip-row {
+        gap: 0.375rem;
+    }
+    
+    .chip-row .chip-modern {
+        width: 42px;
+        height: 42px;
+        font-size: 0.625rem;
+    }
+    
+    .betting-actions {
+        gap: 0.375rem;
+    }
+    
+    .bet-action-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 0.75rem;
+    }
+    
+    .betting-controls .btn-deal {
+        padding: 0.625rem 1.5rem;
+        font-size: 0.875rem;
+    }
+    
+    /* Deck info */
+    .deck-info {
+        position: absolute;
+        bottom: 0.5rem;
+        right: 0.5rem;
+        font-size: 0.625rem;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    /* Cards */
+    .cards-area {
+        min-height: 4.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    /* Extra small mobile */
+    .bankroll-display {
+        padding: 0.25rem 0.5rem;
+        gap: 0.375rem;
+    }
+    
+    .bankroll-amount {
+        font-size: 0.875rem;
+    }
+    
+    .bankroll-stat {
+        font-size: 0.5rem;
+        padding: 0.125rem 0.25rem;
+    }
+    
+    .chip-row .chip-modern {
+        width: 36px;
+        height: 36px;
+        font-size: 0.5625rem;
+    }
+    
+    .bet-action-btn {
+        width: 34px;
+        height: 34px;
+    }
+    
+    .betting-controls .btn-deal {
+        padding: 0.5rem 1.25rem;
+        font-size: 0.75rem;
+    }
+    
+    .hand-badge {
+        font-size: 0.75rem;
+        padding: 0.1875rem 0.5rem;
+    }
+    
+    .bet-indicator-value {
+        font-size: 1rem;
+    }
+    
+    .game-table {
+        min-height: 180px;
+    }
+    
+    .cards-area {
+        min-height: 4rem;
+    }
+}
+
+@media (max-width: 360px) {
+    /* Very small screens */
+    .chip-row {
+        gap: 0.25rem;
+    }
+    
+    .chip-row .chip-modern {
+        width: 32px;
+        height: 32px;
+        font-size: 0.5rem;
+    }
+    
+    .game-table {
+        min-height: 160px;
+    }
+}
+
+.deck-stat {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.deck-stat i {
+    color: var(--text-muted);
+}
+
+.btn-reshuffle {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    font-size: 0.6875rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all var(--transition);
+}
+
+.btn-reshuffle:hover:not(:disabled) {
+    background: var(--bg-hover);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.btn-reshuffle:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* ============================================
+   Game Area - Full Premium Table Surface
    ============================================ */
 
 .game-area {
@@ -421,122 +1338,174 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
-    background:
-        radial-gradient(ellipse at 50% 50%, rgba(0, 210, 106, 0.06), transparent 70%),
-        radial-gradient(ellipse at 50% 0%, rgba(0, 150, 80, 0.04), transparent 50%),
-        radial-gradient(ellipse at 50% 100%, rgba(0, 150, 80, 0.04), transparent 50%),
-        var(--bg-main);
+    padding: 0;
+    padding-bottom: max(2rem, env(safe-area-inset-bottom));
+    background: var(--bg-main);
     min-height: 0;
     overflow: hidden;
-    gap: 0.75rem;
+    flex: 1;
+    position: relative;
 }
 
-/* Table Surface - The main game container */
+/* Table Surface - Full Width Premium Design */
 .table-surface {
     position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 1.5rem 2.5rem;
+    justify-content: space-between;
+    width: 100%;
+    height: 100%;
+    padding: 2rem 2.5rem;
     background:
-        linear-gradient(180deg, rgba(0, 210, 106, 0.02) 0%, transparent 30%, transparent 70%, rgba(0, 210, 106, 0.02) 100%),
-        var(--glass);
-    backdrop-filter: blur(16px);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--glass-border);
+        /* Soft radial ambient glow */
+        radial-gradient(ellipse 80% 60% at 50% 50%, var(--table-gradient-1, rgba(0, 210, 106, 0.08)), transparent 70%),
+        /* Top edge subtle glow */
+        radial-gradient(ellipse 100% 40% at 50% 0%, var(--table-gradient-2, rgba(0, 150, 80, 0.05)), transparent 60%),
+        /* Bottom edge subtle glow */
+        radial-gradient(ellipse 100% 40% at 50% 100%, var(--table-gradient-2, rgba(0, 150, 80, 0.05)), transparent 60%),
+        /* Base background */
+        var(--bg-main);
+    overflow: hidden;
+    /* Subtle inner border effect */
     box-shadow:
-        0 0 60px rgba(0, 210, 106, 0.08),
-        inset 0 0 60px rgba(0, 210, 106, 0.02);
-    min-width: 400px;
+        inset 0 0 0 1px rgba(255, 255, 255, 0.03),
+        inset 0 0 80px rgba(0, 0, 0, 0.2);
 }
 
-/* Table Lines - Decorative */
+/* Logo Watermark - Centered soft glow */
+.table-surface::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 180px;
+    height: 180px;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text x="50" y="60" text-anchor="middle" font-size="50" font-weight="bold" fill="rgba(255,255,255,0.03)">♠</text></svg>') center/contain no-repeat;
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(2px);
+}
+
+/* Alternative logo watermark using accent color */
+.table-surface::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, var(--accent-dim) 0%, transparent 70%);
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(40px);
+}
+
+/* Table Lines - Decorative (more subtle) */
 .table-line {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    width: 60%;
+    width: 50%;
+    max-width: 400px;
     height: 1px;
     background: linear-gradient(90deg, transparent, var(--border-glow), transparent);
+    opacity: 0.5;
 }
 
 .table-line-top {
-    top: 1rem;
+    top: 1.5rem;
 }
 
 .table-line-bottom {
-    bottom: 1rem;
+    bottom: 1.5rem;
 }
 
-/* Table Arcs - Deal zones */
+/* Table Arcs - Deal zones (subtle indicator) */
 .table-arc {
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
-    width: 160px;
-    height: 40px;
-    border: 1px dashed rgba(0, 210, 106, 0.15);
+    width: 200px;
+    height: 50px;
+    border: 1px dashed rgba(var(--accent-rgb, 0, 210, 106), 0.12);
     border-radius: 50%;
     pointer-events: none;
+    opacity: 0.6;
 }
 
 .table-arc-dealer {
-    top: 2.5rem;
+    top: 3rem;
     border-bottom: none;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 }
 
 .table-arc-player {
-    bottom: 2.5rem;
+    bottom: 3rem;
     border-top: none;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 }
 
-/* Hand Zones */
+/* Hand Zones - Positioned for full-width table */
 .hand-zone {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.625rem;
     position: relative;
-    z-index: 1;
+    z-index: 2;
+    padding: 0.5rem;
+}
+
+.dealer-zone {
+    /* Dealer at top */
+    margin-top: auto;
+}
+
+.player-hands-container {
+    /* Player at bottom */
+    margin-bottom: auto;
+    z-index: 2;
 }
 
 .hand-info {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.625rem;
 }
 
 .hand-label {
     font-size: 0.6875rem;
     color: var(--text-3);
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     font-weight: 600;
 }
 
 .hand-value {
+    font-family: var(--font-display);
     font-size: 1rem;
     font-weight: 700;
-    padding: 0.25rem 0.75rem;
+    padding: 0.3125rem 0.875rem;
     background: var(--bg-elevated);
-    border-radius: 1rem;
-    min-width: 2.5rem;
+    border-radius: 1.5rem;
+    min-width: 2.75rem;
     text-align: center;
     border: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 .hand-value.blackjack {
     background: var(--accent);
     color: #000;
     border-color: var(--accent);
-    box-shadow: 0 0 16px var(--accent-glow);
+    box-shadow: 0 0 20px var(--accent-glow);
 }
 
 .hand-value.bust {
@@ -547,15 +1516,16 @@ body {
 
 /* Active turn glow */
 .player-zone.active-turn .cards-row {
-    filter: drop-shadow(0 0 8px var(--accent-dim));
+    filter: drop-shadow(0 0 12px var(--accent-dim));
 }
 
 .cards-row {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 5.5rem;
+    min-height: 6rem;
     transition: filter var(--transition);
+    gap: 0.125rem;
 }
 
 /* ============================================
@@ -644,6 +1614,7 @@ body {
 }
 
 .card-rank {
+    font-family: var(--font-display);
     font-size: 0.75rem;
     font-weight: 700;
 }
@@ -673,99 +1644,814 @@ body {
 }
 
 .card.dealing {
-    animation: deal 0.25s ease-out forwards;
+    animation: dealFromDeck 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 
-@keyframes deal {
-    from {
+/* Card slides in smoothly from nearby position */
+@keyframes dealFromDeck {
+    0% {
         opacity: 0;
-        transform: translateY(-2rem) scale(0.8) rotateX(20deg);
+        transform: translate(25px, -20px) scale(0.92);
+    }
+    40% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+/* Dealer cards - subtle slide from upper right */
+.dealer-zone .card.dealing {
+    animation: dealToDealer 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@keyframes dealToDealer {
+    0% {
+        opacity: 0;
+        transform: translate(20px, -15px) scale(0.94);
+    }
+    40% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+/* Player cards - subtle slide from upper area */
+.player-zone .card.dealing {
+    animation: dealToPlayer 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@keyframes dealToPlayer {
+    0% {
+        opacity: 0;
+        transform: translate(20px, -25px) scale(0.94);
+    }
+    40% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1);
+    }
+}
+
+/* Card Flip Animation - for revealing hole card */
+.card.flipping {
+    animation: cardFlip3D 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    transform-style: preserve-3d;
+}
+
+@keyframes cardFlip3D {
+    0% {
+        transform: rotateY(180deg) scale(0.98);
+    }
+    50% {
+        transform: rotateY(90deg) scale(1.02);
+    }
+    100% {
+        transform: rotateY(0deg) scale(1);
+    }
+}
+
+/* Card Reveal - when dealer shows hole card */
+.card.revealing {
+    animation: cardReveal 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    transform-style: preserve-3d;
+}
+
+@keyframes cardReveal {
+    0% {
+        transform: rotateY(180deg) scale(0.98);
+    }
+    50% {
+        transform: rotateY(90deg) scale(1.01);
+    }
+    100% {
+        transform: rotateY(0deg) scale(1);
+    }
+}
+
+/* Winning Card Glow */
+.card.winning {
+    animation: cardWinGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes cardWinGlow {
+    from {
+        box-shadow:
+            0 4px 12px rgba(0, 0, 0, 0.3),
+            0 0 12px var(--accent-glow);
     }
 
     to {
+        box-shadow:
+            0 4px 12px rgba(0, 0, 0, 0.3),
+            0 0 24px var(--accent-glow);
+    }
+}
+
+/* Losing Card - subtle dim effect */
+.card.losing {
+    filter: brightness(0.7) saturate(0.8);
+}
+
+/* ============================================
+   Premium Chip Animations
+   ============================================ */
+
+/* Chip hover lift - subtle effect */
+@keyframes chipLift {
+    to {
+        transform: translateY(-0.25rem) scale(1.08);
+        box-shadow: 
+            0 6px 12px rgba(0, 0, 0, 0.5),
+            inset 0 2px 4px rgba(255, 255, 255, 0.3);
+    }
+}
+
+/* Chip remove animation */
+.stacked-chip.removing {
+    animation: chipRemove 0.2s ease-out forwards;
+}
+
+@keyframes chipRemove {
+    0% {
         opacity: 1;
-        transform: translateY(0) scale(1) rotateX(0);
+        transform: translateY(0) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateY(-1rem) scale(0.8);
     }
 }
 
 /* ============================================
-   Center Controls - Glassmorphism
+   Premium Result Animations
+   ============================================ */
+
+/* Win celebration pulse */
+.hand-badge.win-pulse {
+    animation: winPulse 0.6s ease-out;
+}
+
+@keyframes winPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    30% {
+        transform: scale(1.15);
+        box-shadow: 0 0 30px var(--accent-glow);
+    }
+    60% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 20px var(--accent-glow);
+    }
+}
+
+/* Blackjack celebration */
+.hand-badge.blackjack-celebration {
+    animation: blackjackCelebration 0.6s ease-out;
+}
+
+@keyframes blackjackCelebration {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    40% {
+        transform: scale(1.15);
+        box-shadow: 0 0 40px var(--color-blackjack-glow);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 25px var(--color-blackjack-glow);
+    }
+}
+
+/* Bust shake animation */
+.hand-badge.bust-shake {
+    animation: bustShake 0.4s ease-out;
+}
+
+@keyframes bustShake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-0.5rem); }
+    40% { transform: translateX(0.5rem); }
+    60% { transform: translateX(-0.3rem); }
+    80% { transform: translateX(0.3rem); }
+}
+
+/* ============================================
+   Premium Shuffle Animation
+   ============================================ */
+
+.deck-info.shuffling .deck-stat i {
+    animation: shuffleRotate 0.6s ease-in-out infinite;
+}
+
+@keyframes shuffleRotate {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(-15deg); }
+    75% { transform: rotate(15deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/* Shuffle deck visual effect */
+.game-container.shuffling::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100px;
+    height: 140px;
+    background: var(--bg-card);
+    border-radius: 8px;
+    box-shadow: 
+        2px 2px 0 var(--bg-elevated),
+        4px 4px 0 var(--bg-card),
+        6px 6px 0 var(--bg-elevated);
+    animation: shuffleDeck 0.6s ease-in-out;
+    z-index: 100;
+    pointer-events: none;
+}
+
+@keyframes shuffleDeck {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    20% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    40% {
+        transform: translate(-60%, -50%) rotate(-5deg);
+    }
+    60% {
+        transform: translate(-40%, -50%) rotate(5deg);
+    }
+    80% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+}
+
+/* ============================================
+   Premium Balance Change Animation
+   ============================================ */
+
+.bankroll-amount.increasing {
+    animation: balanceIncrease 0.5s ease-out;
+}
+
+@keyframes balanceIncrease {
+    0% { transform: scale(1); }
+    30% { transform: scale(1.1); color: var(--success); }
+    100% { transform: scale(1); }
+}
+
+.bankroll-amount.decreasing {
+    animation: balanceDecrease 0.5s ease-out;
+}
+
+@keyframes balanceDecrease {
+    0% { transform: scale(1); }
+    30% { transform: scale(0.95); color: var(--error); }
+    100% { transform: scale(1); }
+}
+
+/* Losing Card - subtle dim effect (continued) */
+.card.losing.dim {
+    filter: brightness(0.7) saturate(0.8);
+    transition: filter 0.3s ease;
+}
+
+/* Bust Card - red glow */
+.card.bust-card {
+    animation: cardBustShake 0.4s ease-in-out;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.4),
+        0 0 25px rgba(239, 68, 68, 0.5);
+}
+
+@keyframes cardBustShake {
+
+    0%,
+    100% {
+        transform: translateX(0) rotate(0);
+    }
+
+    20% {
+        transform: translateX(-3px) rotate(-1deg);
+    }
+
+    40% {
+        transform: translateX(3px) rotate(1deg);
+    }
+
+    60% {
+        transform: translateX(-3px) rotate(-1deg);
+    }
+
+    80% {
+        transform: translateX(3px) rotate(1deg);
+    }
+}
+
+/* Shuffle Animation - for cards flying around */
+@keyframes shuffleCard {
+    0% {
+        transform: translateX(0) translateY(0) rotate(0deg);
+    }
+
+    25% {
+        transform: translateX(-20px) translateY(-10px) rotate(-5deg);
+    }
+
+    50% {
+        transform: translateX(20px) translateY(-15px) rotate(5deg);
+    }
+
+    75% {
+        transform: translateX(-10px) translateY(-5px) rotate(-2deg);
+    }
+
+    100% {
+        transform: translateX(0) translateY(0) rotate(0deg);
+    }
+}
+
+.shuffling .card {
+    animation: shuffleCard 0.5s ease-in-out;
+}
+
+/* Blackjack Card Celebration */
+.card.blackjack-card {
+    animation: blackjackCelebrate 0.5s ease-out forwards;
+}
+
+@keyframes blackjackCelebrate {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    50% {
+        transform: scale(1.08);
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
+    }
+    100% {
+        transform: scale(1.02);
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+    }
+}
+
+/* ============================================
+   Center Controls - Bet Display Area
    ============================================ */
 
 .center-controls {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.75rem 0;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 0;
     z-index: 2;
+    position: relative;
+    flex: 1;
+    min-height: 0;
 }
 
-/* Chip Stack Bet Display */
-.bet-stack {
+/* ============================================
+   Modern Betting System - Casino Style
+   ============================================ */
+
+/* Betting Box - Rectangular like modern casinos */
+.betting-box {
+    position: relative;
+    width: 320px;
+    height: 180px;
+    background: linear-gradient(135deg, rgba(0, 245, 160, 0.05) 0%, rgba(0, 201, 127, 0.02) 100%);
+    border: 2px solid rgba(0, 245, 160, 0.3);
+    border-radius: var(--radius-xl);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.4),
+        inset 0 0 60px rgba(0, 0, 0, 0.3),
+        0 0 40px rgba(0, 245, 160, 0.1);
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
-    margin-bottom: 0.25rem;
+    justify-content: center;
+    transition: all 0.3s ease;
+    overflow: hidden;
 }
 
-.bet-chips {
+.betting-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        repeating-linear-gradient(45deg,
+            transparent,
+            transparent 10px,
+            rgba(0, 245, 160, 0.02) 10px,
+            rgba(0, 245, 160, 0.02) 20px);
+    pointer-events: none;
+}
+
+.betting-box:hover {
+    border-color: var(--accent);
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.5),
+        inset 0 0 60px rgba(0, 0, 0, 0.3),
+        0 0 60px var(--accent-glow);
+}
+
+.betting-box-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 1.5rem;
+}
+
+/* Chip Stacks Container - Base styles (overridden by new-layout.css) */
+.chip-stacks {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    gap: 2px;
-    min-height: 1.75rem;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    max-width: 300px;
+    min-height: 50px;
 }
 
-.bet-chip-stack {
+/* Chip Stack Column */
+.chip-stack-column {
     display: flex;
-    flex-direction: column-reverse;
+    flex-direction: column;
     align-items: center;
+    position: relative;
 }
 
-.bet-chip-mini {
-    width: 1.25rem;
-    height: 0.3rem;
-    border-radius: 0.15rem;
-    margin-top: -0.15rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+/* Bet Amount Display Box */
+.bet-amount-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius);
+    border: 1px solid var(--glass-border);
+    min-width: 100px;
 }
 
-.bet-chip-mini:first-child {
-    margin-top: 0;
-}
-
-.bet-chip-mini.chip-1 {
-    background: var(--chip-1);
-}
-
-.bet-chip-mini.chip-5 {
-    background: var(--chip-5);
-}
-
-.bet-chip-mini.chip-25 {
-    background: var(--chip-25);
-}
-
-.bet-chip-mini.chip-100 {
-    background: var(--chip-100);
-}
-
-.bet-chip-mini.chip-500 {
-    background: var(--chip-500);
-}
-
-.bet-chip-mini.chip-1000 {
-    background: var(--chip-1000);
-}
-
-.bet-amount {
-    font-size: 0.875rem;
+.bet-label {
+    font-size: 0.75rem;
     font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.bet-total {
+    font-size: 1.75rem;
+    font-weight: 800;
+    font-family: var(--font-display);
     color: var(--accent);
-    text-shadow: 0 0 12px var(--accent-glow);
+    text-shadow: 0 0 20px var(--accent-glow);
+    line-height: 1;
+}
+
+/* Chip Count Badge */
+.chip-count-badge {
+    position: absolute;
+    bottom: -8px;
+    right: -8px;
+    background: var(--accent);
+    color: #000;
+    font-size: 0.625rem;
+    font-weight: 800;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.5rem;
+    border: 2px solid var(--bg-elevated);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* ============================================
+   Modern Horizontal Chip Selector
+   ============================================ */
+
+.chip-selector-modern {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    background: var(--glass);
+    backdrop-filter: blur(20px);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    flex-wrap: wrap;
+}
+
+.chip-modern {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    position: relative;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.5),
+        inset 0 3px 6px rgba(255, 255, 255, 0.3),
+        inset 0 -3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.chip-modern::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg,
+            transparent 0deg 15deg,
+            rgba(255, 255, 255, 0.3) 15deg 30deg,
+            transparent 30deg 45deg,
+            rgba(255, 255, 255, 0.3) 45deg 60deg,
+            transparent 60deg 75deg,
+            rgba(255, 255, 255, 0.3) 75deg 90deg,
+            transparent 90deg);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    padding: 3px;
+    pointer-events: none;
+}
+
+.chip-modern:hover {
+    transform: translateY(-6px) scale(1.15);
+    box-shadow:
+        0 8px 20px rgba(0, 0, 0, 0.6),
+        inset 0 4px 8px rgba(255, 255, 255, 0.4),
+        inset 0 -4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.chip-modern:active {
+    transform: translateY(-3px) scale(1.1);
+}
+
+.chip-modern .chip-value {
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+/* Chip color variants */
+.chip-1 {
+    background: linear-gradient(135deg, #8b92a8 0%, #5c6475 100%);
+    color: #fff;
+}
+
+.chip-5 {
+    background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+    color: #fff;
+}
+
+.chip-25 {
+    background: linear-gradient(135deg, #4ade80 0%, #16a34a 100%);
+    color: #fff;
+}
+
+.chip-100 {
+    background: linear-gradient(135deg, #60a5fa 0%, #2563eb 100%);
+    color: #fff;
+}
+
+.chip-500 {
+    background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
+    color: #fff;
+}
+
+.chip-1000 {
+    background: linear-gradient(135deg, #fcd34d 0%, #f59e0b 100%);
+    color: #000;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+}
+
+/* Chip Actions Inline */
+.chip-actions-inline {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: 0.75rem;
+    padding-left: 0.75rem;
+    border-left: 1px solid var(--glass-border);
+}
+
+.chip-action {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius);
+    background: var(--bg-card);
+    border: 1px solid var(--glass-border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    transition: all 0.2s ease;
+}
+
+.chip-action:hover {
+    background: var(--bg-elevated);
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-2px);
+}
+
+.chip-action:active {
+    transform: translateY(0);
+}
+
+/* Bet Total Display */
+.bet-total {
+    font-family: var(--font-display);
+    font-size: 1.125rem;
+    font-weight: 800;
+    color: #fff;
+    text-shadow:
+        0 0 10px var(--accent-glow),
+        0 2px 4px rgba(0, 0, 0, 0.5);
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Empty betting circle text */
+.betting-circle-inner::before {
+    content: 'PLACE BET';
+    position: absolute;
+    font-family: var(--font-display);
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.6;
+    top: 20px;
+}
+
+.chip-stacks:not(:empty)~.bet-total+.betting-circle-inner::before,
+.chip-stacks:not(:empty)+.bet-total~ ::before {
+    display: none;
+}
+
+/* Chip Rail - Selection bar */
+.chip-rail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: var(--glass);
+    backdrop-filter: blur(12px);
+    border-radius: 2rem;
+    border: 1px solid var(--glass-border);
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+/* Table Chip - Selectable chips in the rail */
+.table-chip {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-display);
+    font-weight: 800;
+    transition: all 0.2s ease;
+    position: relative;
+    box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.4),
+        inset 0 2px 4px rgba(255, 255, 255, 0.25),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.25);
+}
+
+.table-chip:hover {
+    transform: translateY(-4px) scale(1.1);
+    box-shadow:
+        0 6px 16px rgba(0, 0, 0, 0.5),
+        inset 0 2px 4px rgba(255, 255, 255, 0.25),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.25),
+        0 0 20px var(--accent-dim);
+}
+
+.table-chip:active {
+    transform: translateY(0) scale(0.95);
+}
+
+.table-chip .chip-value {
+    font-size: 0.6rem;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+    z-index: 1;
+}
+
+/* Chip colors */
+.table-chip[data-value="1"] {
+    background: repeating-conic-gradient(from 0deg, var(--chip-1) 0deg 30deg, #555 30deg 60deg);
+}
+
+.table-chip[data-value="5"] {
+    background: repeating-conic-gradient(from 0deg, var(--chip-5) 0deg 30deg, #b91c1c 30deg 60deg);
+}
+
+.table-chip[data-value="25"] {
+    background: repeating-conic-gradient(from 0deg, var(--chip-25) 0deg 30deg, #15803d 30deg 60deg);
+}
+
+.table-chip[data-value="100"] {
+    background: repeating-conic-gradient(from 0deg, var(--chip-100) 0deg 30deg, #1d4ed8 30deg 60deg);
+}
+
+.table-chip[data-value="500"] {
+    background: repeating-conic-gradient(from 0deg, var(--chip-500) 0deg 30deg, #6d28d9 30deg 60deg);
+}
+
+.table-chip[data-value="1000"] {
+    background: repeating-conic-gradient(from 0deg, var(--chip-1000) 0deg 30deg, #a16207 30deg 60deg);
+}
+
+/* Undo Button */
+.chip-undo-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    color: var(--text-2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    margin-left: 0.5rem;
+}
+
+.chip-undo-btn:hover {
+    background: var(--error);
+    border-color: var(--error);
+    color: #fff;
+    transform: scale(1.1);
+}
+
+/* Hide chip rail when not betting */
+.chip-rail.hidden {
+    display: none;
+}
+
+/* Chip count badge for stacks > 5 */
+.chip-count-badge {
+    font-family: var(--font-display);
+    font-size: 0.5rem;
+    font-weight: 700;
+    color: var(--text-1);
+    background: var(--bg-elevated);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    margin-top: 0.125rem;
+    border: 1px solid var(--border);
 }
 
 /* Actions Glass Container */
@@ -913,6 +2599,7 @@ body {
     align-items: center;
     padding: 1rem 0;
     margin-top: 1rem;
+    margin-bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
 .deal-btn-main {
@@ -925,7 +2612,7 @@ body {
     border: none;
     border-radius: var(--radius-lg);
     color: #000;
-    font-family: inherit;
+    font-family: var(--font-display);
     font-size: 1.25rem;
     font-weight: 800;
     cursor: pointer;
@@ -994,6 +2681,7 @@ body {
     gap: 0.5rem;
     padding: 0.75rem 1rem;
     margin-top: 1rem;
+    margin-bottom: max(1rem, env(safe-area-inset-bottom));
     background: var(--glass);
     backdrop-filter: blur(12px);
     border-radius: var(--radius-lg);
@@ -1066,11 +2754,12 @@ body {
 }
 
 .action-label {
+    font-family: var(--font-display);
     font-size: 0.5rem;
     font-weight: 600;
     color: var(--text-3);
     text-transform: uppercase;
-    letter-spacing: 0.25px;
+    letter-spacing: 0.5px;
     text-align: center;
     white-space: nowrap;
 }
@@ -1116,7 +2805,7 @@ body {
 }
 
 /* ============================================
-   Result Overlay - Playful & Rewarding
+   Result Overlay - Quick & Clean
    ============================================ */
 
 .result-overlay {
@@ -1125,24 +2814,25 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: rgba(0, 0, 0, 0.35);
-    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
     pointer-events: none;
     opacity: 0;
     visibility: hidden;
-    z-index: 1000;
-    transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
+    z-index: var(--z-modal);
+    transition: opacity 0.2s ease, visibility 0.2s ease;
 }
 
 .result-overlay.visible {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
 }
 
 .result-overlay.fade-out {
     opacity: 0;
-    backdrop-filter: blur(0px);
-    transition: opacity 0.5s ease-out, backdrop-filter 0.5s ease-out;
+    pointer-events: none;
+    transition: opacity 0.3s ease-out;
 }
 
 .result-card {
@@ -1160,7 +2850,7 @@ body {
         0 10px 40px rgba(0, 0, 0, 0.5),
         0 0 60px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
-    animation: result-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    animation: result-appear 0.35s ease-out forwards;
 }
 
 /* Win state - celebratory */
@@ -1173,7 +2863,7 @@ body {
         0 0 100px rgba(0, 210, 106, 0.2),
         0 10px 40px rgba(0, 0, 0, 0.5),
         inset 0 1px 0 rgba(0, 255, 128, 0.2);
-    animation: result-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+    animation: result-appear 0.35s ease-out forwards,
         win-glow 1.5s ease-in-out infinite;
 }
 
@@ -1201,9 +2891,9 @@ body {
 .result-icon {
     font-size: 2.5rem;
     margin-bottom: 0.5rem;
-    animation: icon-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards;
+    animation: icon-appear 0.3s ease-out 0.1s forwards;
     opacity: 0;
-    transform: scale(0);
+    transform: scale(0.5);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1217,7 +2907,7 @@ body {
 .result-card.win-card .result-icon,
 .result-card.blackjack-card .result-icon {
     color: var(--accent);
-    animation: icon-pop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s forwards,
+    animation: icon-appear 0.3s ease-out 0.1s forwards,
         icon-celebrate 0.6s ease-in-out 0.5s infinite;
 }
 
@@ -1230,6 +2920,7 @@ body {
 }
 
 .result-text {
+    font-family: var(--font-display);
     font-size: 1rem;
     font-weight: 800;
     text-transform: uppercase;
@@ -1257,6 +2948,7 @@ body {
 }
 
 .result-amount {
+    font-family: var(--font-display);
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0;
@@ -1281,22 +2973,12 @@ body {
 }
 
 /* Animations */
-@keyframes result-bounce {
-    0% {
+@keyframes result-appear {
+    from {
         opacity: 0;
-        transform: scale(0.3) translateY(40px);
+        transform: scale(0.9) translateY(10px);
     }
-
-    50% {
-        opacity: 1;
-        transform: scale(1.1) translateY(-10px);
-    }
-
-    70% {
-        transform: scale(0.95) translateY(5px);
-    }
-
-    100% {
+    to {
         opacity: 1;
         transform: scale(1) translateY(0);
     }
@@ -1343,175 +3025,265 @@ body {
     }
 }
 
-@keyframes icon-pop {
-    0% {
+@keyframes icon-appear {
+    from {
         opacity: 0;
-        transform: scale(0) rotate(-15deg);
+        transform: scale(0.7);
     }
-
-    100% {
+    to {
         opacity: 1;
-        transform: scale(1) rotate(0deg);
+        transform: scale(1);
     }
 }
 
 @keyframes icon-celebrate {
-
-    0%,
-    100% {
+    0%, 100% {
         transform: scale(1) rotate(0deg);
     }
-
     25% {
-        transform: scale(1.15) rotate(-8deg);
+        transform: scale(1.08) rotate(-5deg);
     }
-
     75% {
-        transform: scale(1.15) rotate(8deg);
+        transform: scale(1.08) rotate(5deg);
     }
 }
 
 @keyframes text-slide-up {
-    0% {
+    from {
         opacity: 0;
-        transform: translateY(10px);
+        transform: translateY(6px);
     }
-
-    100% {
+    to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
 /* ============================================
-   Modal - Glassmorphism
+   Modal - Clean Minimalist Design
    ============================================ */
 
 .modal-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-    display: flex;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    display: none;
     align-items: center;
     justify-content: center;
     opacity: 0;
     visibility: hidden;
-    transition: all var(--transition);
+    transition: opacity 0.2s ease, visibility 0.2s ease;
     z-index: 1000;
+    padding: 1rem;
+    overflow-y: auto;
 }
 
 .modal-backdrop.visible {
+    display: flex !important;
     opacity: 1;
     visibility: visible;
 }
 
 .modal {
-    background: var(--glass);
-    backdrop-filter: blur(20px);
-    border-radius: var(--radius-lg);
-    padding: 1.25rem;
-    width: 90%;
-    max-width: 20rem;
-    border: 1px solid var(--glass-border);
-    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+    background: var(--bg-panel, #0c0c14);
+    border-radius: 16px;
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 360px;
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.4);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.modal::-webkit-scrollbar {
+    width: 4px;
+}
+
+.modal::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.modal::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.modal::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-large {
+    max-width: 400px;
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .modal-title {
-    font-size: 1.125rem;
-    font-weight: 700;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
 }
 
 .modal-close {
-    width: 1.75rem;
-    height: 1.75rem;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--text-2);
+    width: 2rem;
+    height: 2rem;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--text-muted);
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.75rem;
-    transition: all var(--transition);
+    font-size: 0.875rem;
+    transition: all 0.15s ease;
 }
 
 .modal-close:hover {
-    background: var(--bg-elevated);
-    color: var(--text-1);
-    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+/* Modal Content Styles */
+.modal-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+.modal-cost {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--warning, #fbbf24);
+    margin-bottom: 0.25rem;
+}
+
+.modal-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+
+.modal-actions .btn-modal {
+    flex: 1;
 }
 
 .setting-group {
-    margin-bottom: 0.625rem;
+    margin-bottom: 0.75rem;
 }
 
 .setting-label {
-    font-size: 0.625rem;
-    color: var(--text-3);
-    margin-bottom: 0.25rem;
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    margin-bottom: 0.375rem;
     display: block;
-    text-transform: uppercase;
+    font-weight: 500;
 }
 
 .setting-select {
-    width: 100%;
-    padding: 0.5rem;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    color: var(--text-1);
+    width: auto;
+    min-width: 100px;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: var(--text-primary);
     font-family: inherit;
     font-size: 0.8125rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.setting-select:hover {
+    background: rgba(255, 255, 255, 0.06);
 }
 
 .setting-select:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 8px var(--accent-dim);
 }
 
 .setting-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.625rem;
-    background: var(--bg-card);
-    border-radius: 4px;
-    margin-bottom: 0.375rem;
+    padding: 0.75rem 0;
+    background: transparent;
+    border-radius: 0;
+    margin-bottom: 0;
     font-size: 0.8125rem;
-    color: var(--text-2);
-    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.setting-row:last-child {
+    border-bottom: none;
+}
+
+.setting-row label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
 }
 
 .toggle {
-    width: 2.25rem;
-    height: 1.25rem;
-    background: var(--bg-main);
-    border-radius: 0.625rem;
+    width: 2.5rem;
+    height: 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
     position: relative;
     cursor: pointer;
-    transition: all var(--transition);
+    transition: all 0.2s ease;
+    display: inline-block;
+    flex-shrink: 0;
 }
 
-.toggle.active {
-    background: var(--accent);
-    box-shadow: 0 0 10px var(--accent-glow);
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
 }
 
-.toggle::after {
+.toggle .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.toggle .toggle-slider::before {
     content: '';
     position: absolute;
-    width: 0.875rem;
-    height: 0.875rem;
+    width: 1.125rem;
+    height: 1.125rem;
     background: #fff;
     border-radius: 50%;
     top: 0.1875rem;
@@ -1519,8 +3291,119 @@ body {
     transition: transform var(--transition);
 }
 
-.toggle.active::after {
+.toggle input:checked + .toggle-slider {
+    background: var(--accent);
+}
+
+.toggle input:checked + .toggle-slider::before {
     transform: translateX(1rem);
+}
+
+/* Legacy support for .active class */
+.toggle.active {
+    background: var(--accent);
+}
+
+.toggle::after {
+    display: none;
+}
+
+.toggle.active::after {
+    display: none;
+}
+
+/* Theme Picker */
+.theme-picker {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.theme-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.theme-btn:hover {
+    background: var(--bg-elevated);
+    border-color: var(--text-3);
+    transform: translateY(-2px);
+}
+
+.theme-btn.active {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    box-shadow: 0 0 12px var(--accent-dim);
+}
+
+.theme-icon {
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.theme-name {
+    font-size: 0.5rem;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.theme-btn.active .theme-name {
+    color: var(--accent);
+}
+
+/* Volume Slider */
+.setting-slider {
+    width: 100%;
+    height: 6px;
+    background: var(--bg-main);
+    border-radius: 3px;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.setting-slider::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--accent-glow);
+    transition: all 0.15s ease;
+}
+
+.setting-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 15px var(--accent-glow);
+}
+
+.setting-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    background: var(--accent);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--accent-glow);
+}
+
+.setting-slider::-webkit-slider-runnable-track {
+    background: linear-gradient(to right, var(--accent) 0%, var(--bg-elevated) 100%);
+    border-radius: 3px;
 }
 
 .btn-secondary {
@@ -1551,7 +3434,121 @@ body {
 .add-money-content {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.25rem;
+}
+
+.custom-amount {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.custom-amount label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.15s ease;
+}
+
+.input-group:focus-within {
+    border-color: var(--accent);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.input-prefix {
+    padding: 0.75rem 1rem;
+    background: transparent;
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 1rem;
+}
+
+.amount-input {
+    flex: 1;
+    padding: 0.75rem;
+    padding-left: 0;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 1.125rem;
+    font-weight: 600;
+    outline: none;
+    width: 100%;
+}
+
+.amount-input::placeholder {
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+/* Hide number input spinners */
+.amount-input::-webkit-outer-spin-button,
+.amount-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    appearance: none;
+    margin: 0;
+}
+
+.amount-input[type=number] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+.btn-full {
+    width: 100%;
+}
+
+/* Modal Buttons */
+.btn-modal {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.875rem 1.25rem;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border: none;
+}
+
+.btn-modal.btn-accept {
+    background: var(--accent);
+    color: #000;
+}
+
+.btn-modal.btn-accept:hover {
+    filter: brightness(1.1);
+}
+
+.btn-modal.btn-accept:active {
+    transform: scale(0.98);
+}
+
+.btn-modal.btn-decline {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-secondary);
+}
+
+.btn-modal.btn-decline:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-modal.btn-decline:hover {
+    background: var(--bg-elevated);
+    border-color: var(--text-muted);
 }
 
 .money-input-row {
@@ -1609,61 +3606,57 @@ body {
 
 .quick-amounts {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.625rem;
 }
 
 .quick-amount-btn {
-    padding: 0.625rem 0.5rem;
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text-2);
+    padding: 0.75rem 0.5rem;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: var(--text-secondary);
     font-family: inherit;
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all var(--transition);
+    transition: all 0.15s ease;
 }
 
 .quick-amount-btn:hover {
-    background: var(--bg-elevated);
-    border-color: var(--accent);
-    color: var(--accent);
-    box-shadow: 0 0 8px var(--accent-dim);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: var(--text-primary);
 }
 
 .quick-amount-btn:active {
-    transform: scale(0.95);
+    transform: scale(0.97);
 }
 
 .btn-primary-lg {
     width: 100%;
     padding: 0.875rem;
-    background: linear-gradient(145deg, var(--accent-hover), var(--accent));
+    background: var(--accent);
     border: none;
-    border-radius: var(--radius);
+    border-radius: 10px;
     color: #000;
     font-family: inherit;
     font-size: 0.875rem;
-    font-weight: 700;
+    font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    transition: all var(--transition);
-    box-shadow: 0 4px 16px var(--accent-glow);
+    transition: all 0.15s ease;
 }
 
 .btn-primary-lg:hover {
-    background: linear-gradient(145deg, #00f080, var(--accent-hover));
-    box-shadow: 0 6px 24px var(--accent-glow);
-    transform: translateY(-2px);
+    filter: brightness(1.1);
 }
 
 .btn-primary-lg:active {
-    transform: translateY(0);
+    transform: scale(0.98);
 }
 
 /* Toast */
@@ -1766,6 +3759,48 @@ body {
 @media (max-width: 700px) {
     html {
         font-size: 13px;
+    }
+
+    .game-main {
+        padding: 0.5rem;
+    }
+
+    .game-container {
+        padding: 0.5rem;
+        gap: 0.75rem;
+    }
+
+    .deck-info {
+        position: static;
+        margin-top: 0.5rem;
+        font-size: 0.6875rem;
+        padding: 0.375rem 0.75rem;
+    }
+
+    .cards-area {
+        min-height: 4rem;
+    }
+    
+    .game-table {
+        padding: 0.75rem 0;
+        min-height: 300px;
+        gap: 0.875rem;
+    }
+    
+    .dealer-zone,
+    .player-zone {
+        min-height: 80px;
+        gap: 0.5rem;
+    }
+    
+    .table-center {
+        min-height: 100px;
+        padding: 0.5rem 0;
+        gap: 0.625rem;
+    }
+    
+    .zone-label {
+        font-size: 0.625rem;
     }
 
     .game-layout {
@@ -2393,6 +4428,48 @@ body {
         width: 20px;
         height: 20px;
     }
+
+    /* Modern betting box responsive */
+    .betting-box {
+        width: 280px;
+        height: 140px;
+    }
+
+    .betting-box-inner {
+        padding: 1rem;
+        gap: 0.5rem;
+        flex-direction: column;
+    }
+
+    .chip-selector-modern {
+        padding: 0.75rem 1rem;
+        gap: 0.5rem;
+    }
+
+    .chip-modern {
+        width: 48px;
+        height: 48px;
+        font-size: 0.75rem;
+    }
+
+    .chip-action {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
+    }
+
+    .bet-amount-box {
+        padding: 0.75rem 1rem;
+        min-width: 80px;
+    }
+
+    .bet-label {
+        font-size: 0.625rem;
+    }
+
+    .bet-total {
+        font-size: 1.5rem;
+    }
 }
 
 /* Touch devices - disable hover effects */
@@ -2542,4 +4619,1238 @@ body {
     .action-dock {
         padding-bottom: max(0.375rem, env(safe-area-inset-bottom));
     }
+
+    .mobile-bottom-bar {
+        padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    }
+}
+
+/* ============================================
+   Card Counting Display
+   ============================================ */
+
+.count-display {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.375rem 0.75rem;
+    background: var(--glass);
+    backdrop-filter: blur(10px);
+    border-radius: var(--radius);
+    border: 1px solid var(--accent-dim);
+}
+
+.count-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.125rem;
+}
+
+.count-label {
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.count-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 2rem;
+    text-align: center;
+}
+
+.count-value.positive {
+    color: var(--color-win);
+}
+
+.count-value.negative {
+    color: var(--color-lose);
+}
+
+/* ============================================
+   Insurance Modal
+   ============================================ */
+
+.insurance-modal {
+    max-width: 22rem;
+}
+
+.insurance-content {
+    text-align: center;
+    padding: 1rem 0;
+}
+
+.insurance-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.insurance-cost {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--warning);
+    margin-bottom: 0.25rem;
+}
+
+.insurance-payout {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.insurance-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.btn-insurance {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: var(--radius);
+    font-family: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all var(--transition);
+}
+
+.btn-insurance.decline {
+    background: var(--bg-elevated);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+}
+
+.btn-insurance.decline:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+}
+
+.btn-insurance.accept {
+    background: linear-gradient(145deg, var(--warning), #d97706);
+    color: #000;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+
+.btn-insurance.accept:hover {
+    filter: brightness(1.1);
+    transform: translateY(-2px);
+}
+
+/* ============================================
+   Split Hands Container
+   ============================================ */
+
+.player-hands-container {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.hand-zone.split-hand {
+    position: relative;
+    padding: 0.5rem;
+    border-radius: var(--radius);
+    transition: all var(--transition);
+}
+
+.hand-zone.split-hand::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius);
+    border: 2px solid transparent;
+    transition: all var(--transition);
+}
+
+.hand-zone.split-hand.active-hand::before {
+    border-color: var(--accent);
+    box-shadow: 0 0 16px var(--accent-dim);
+}
+
+.hand-zone.split-hand.inactive-hand {
+    opacity: 0.5;
+    filter: grayscale(0.3);
+}
+
+.split-hand-label {
+    position: absolute;
+    top: -0.75rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.125rem 0.5rem;
+    background: var(--bg-elevated);
+    border-radius: 0.25rem;
+    color: var(--text-muted);
+}
+
+.split-hand.active-hand .split-hand-label {
+    background: var(--accent);
+    color: #000;
+}
+
+/* ============================================
+   Result Continue Button
+   ============================================ */
+
+.result-continue-btn {
+    margin-top: 1rem;
+    padding: 0.625rem 1.5rem;
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all var(--transition);
+    opacity: 0;
+    animation: text-slide-up 0.4s ease-out 0.4s forwards;
+}
+
+.result-continue-btn:hover {
+    background: var(--bg-elevated);
+    border-color: var(--accent);
+    color: var(--text-primary);
+    transform: translateY(-2px);
+}
+
+.result-card.win-card .result-continue-btn,
+.result-card.blackjack-card .result-continue-btn {
+    border-color: var(--color-win);
+}
+
+.result-card.win-card .result-continue-btn:hover,
+.result-card.blackjack-card .result-continue-btn:hover {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+}
+
+/* ============================================
+   Settings Sections
+   ============================================ */
+
+.settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.settings-section {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.settings-actions {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.btn-settings {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: none;
+    border-radius: 10px;
+    color: #ef4444;
+    font-family: inherit;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.btn-settings:hover {
+    background: rgba(239, 68, 68, 0.15);
+}
+
+.settings-section:last-of-type {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.settings-section-title {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 0.625rem;
+}
+
+/* Theme Picker Grid */
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.625rem;
+}
+
+.theme-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 0.5rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.theme-option:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.theme-option.active {
+    border-color: var(--accent);
+    background: rgba(0, 245, 160, 0.08);
+}
+
+.theme-preview {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Theme preview colors */
+.theme-vanilla { background: linear-gradient(135deg, #00f5a0, #00c97f); }
+.theme-emerald { background: linear-gradient(135deg, #00ff7f, #00b35c); }
+.theme-crimson { background: linear-gradient(135deg, #ff4444, #cc0000); }
+.theme-sapphire { background: linear-gradient(135deg, #6366f1, #4f46e5); }
+.theme-neon { background: linear-gradient(135deg, #ff00ff, #00ffff); }
+.theme-vegas { background: linear-gradient(135deg, #ffd700, #ff8c00); }
+.theme-ocean { background: linear-gradient(135deg, #00bfff, #0066cc); }
+.theme-dark { background: linear-gradient(135deg, #00d26a, #008844); }
+
+.theme-name {
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.theme-option.active .theme-name {
+    color: var(--accent);
+}
+
+/* Volume Slider */
+.setting-range {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 120px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+}
+
+.setting-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.1s ease;
+}
+
+.setting-range::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+}
+
+.setting-range::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Setting hint text */
+.setting-hint {
+    display: block;
+    font-size: 0.625rem;
+    color: var(--text-muted);
+    margin-top: 0.125rem;
+    font-weight: 400;
+}
+
+/* ============================================
+   Mobile Bottom Bar - Complete Mobile Menu
+   ============================================ */
+
+.mobile-bottom-bar {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border);
+    padding: 0.5rem;
+    z-index: var(--z-controls);
+}
+
+.mobile-betting-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.mobile-bet-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+    padding: 0.25rem 0.5rem;
+    background: var(--glass);
+    border-radius: var(--radius);
+    border: 1px solid var(--glass-border);
+}
+
+.mobile-bet-label {
+    font-size: 0.5rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.mobile-bet-value {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--accent);
+}
+
+.mobile-chips-scroll {
+    flex: 1;
+    display: flex;
+    gap: 0.375rem;
+    overflow-x: auto;
+    padding: 0.25rem 0;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.mobile-chips-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.mobile-chip {
+    flex-shrink: 0;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(0.5rem, 2.5vw, 0.625rem);
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    transition: all var(--transition);
+    box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.mobile-chip:active {
+    transform: scale(0.9);
+}
+
+/* Mobile chip color variants */
+.mobile-chip.chip-1 {
+    background: linear-gradient(145deg, #7a8599, #5c6475);
+}
+
+.mobile-chip.chip-5 {
+    background: linear-gradient(145deg, #f87171, #dc2626);
+}
+
+.mobile-chip.chip-25 {
+    background: linear-gradient(145deg, #4ade80, #16a34a);
+}
+
+.mobile-chip.chip-100 {
+    background: linear-gradient(145deg, #60a5fa, #2563eb);
+}
+
+.mobile-chip.chip-500 {
+    background: linear-gradient(145deg, #a78bfa, #7c3aed);
+}
+
+.mobile-chip.chip-1000 {
+    background: linear-gradient(145deg, #fcd34d, #ca8a04);
+    color: #000;
+    text-shadow: none;
+}
+
+.mobile-quick-actions {
+    display: flex;
+    gap: 0.375rem;
+}
+
+.mobile-quick-btn {
+    width: 40px;
+    height: 40px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+    font-size: 0.625rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition);
+    font-family: inherit;
+}
+
+.mobile-quick-btn.accent {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+}
+
+.mobile-quick-btn:active {
+    transform: scale(0.9);
+}
+
+/* Desktop only visibility */
+.desktop-only {
+    display: flex;
+}
+
+.hide-mobile-sm {
+    display: flex;
+}
+
+/* ============================================
+   Mobile Responsive - Complete Overhaul
+   ============================================ */
+
+@media (max-width: 700px) {
+    html {
+        font-size: 16px;
+    }
+
+    .desktop-only {
+        display: none !important;
+    }
+
+    .mobile-bottom-bar {
+        display: block;
+    }
+
+    /* Header - Compact */
+    .header {
+        padding: 0.5rem 0.75rem;
+        justify-content: space-between;
+        min-height: auto;
+    }
+
+    .logo-img {
+        width: 1.75rem;
+        height: 1.75rem;
+    }
+
+    .logo-text {
+        font-size: 1rem;
+    }
+
+    .stats-row {
+        display: none;
+    }
+
+    .count-display {
+        position: fixed;
+        top: 0.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 100;
+        padding: 0.25rem 0.75rem;
+    }
+
+    .count-value {
+        font-size: 1rem;
+    }
+
+    .icon-btn {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1rem;
+    }
+
+    /* Game Layout - Full Height */
+    .game-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr;
+        padding-bottom: 75px;
+    }
+
+    .game-area {
+        padding: 0.75rem;
+        justify-content: center;
+        align-items: center;
+    }
+
+    /* Table - Fill Available Space */
+    .table-surface {
+        width: 100%;
+        max-width: 100%;
+        min-width: auto;
+        padding: 1.5rem 1rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .table-line,
+    .table-arc {
+        display: none;
+    }
+
+    /* Hand Zones - Larger Cards */
+    .hand-zone {
+        gap: 0.5rem;
+    }
+
+    .hand-label {
+        font-size: 0.625rem;
+    }
+
+    .hand-value {
+        font-size: 1.125rem;
+        padding: 0.25rem 0.75rem;
+        min-width: 2.5rem;
+    }
+
+    .cards-row {
+        min-height: 5.5rem;
+        gap: 0.25rem;
+    }
+
+    /* Cards - Properly Sized */
+    .card {
+        width: 3.25rem;
+        height: 4.55rem;
+        margin-left: -0.5rem;
+        border-radius: 6px;
+    }
+
+    .card:first-child {
+        margin-left: 0;
+    }
+
+    .card-corner {
+        padding: 3px;
+    }
+
+    .card-rank {
+        font-size: 0.75rem;
+    }
+
+    .card-suit {
+        font-size: 0.5rem;
+    }
+
+    .card-center {
+        font-size: 1rem;
+    }
+
+    /* Center Controls */
+    .center-controls {
+        padding: 0.75rem 0;
+    }
+
+    .bet-amount {
+        font-size: 1rem;
+    }
+
+    .hint-row {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.75rem;
+    }
+
+    /* Deal Button - Prominent */
+    .deal-button-container {
+        padding: 1rem 0;
+    }
+
+    .deal-btn-main {
+        padding: 1rem 2.5rem;
+        font-size: 1.125rem;
+        gap: 0.625rem;
+    }
+
+    .deal-btn-main i {
+        font-size: 1.375rem;
+    }
+
+    /* Action Dock - Touch Friendly */
+    .action-dock {
+        gap: 0.5rem;
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+        width: auto;
+        max-width: 100%;
+    }
+
+    .action-btn {
+        width: 60px;
+        min-width: 60px;
+        max-width: 60px;
+        padding: 0.5rem 0.25rem;
+        gap: 0.25rem;
+    }
+
+    .action-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 0.875rem;
+    }
+
+    .action-label {
+        font-size: 0.5rem;
+    }
+
+    /* Mobile Bottom Bar - Optimized */
+    .mobile-bottom-bar {
+        padding: 0.625rem 0.75rem;
+    }
+
+    .mobile-betting-row {
+        gap: 0.625rem;
+    }
+
+    .mobile-bet-display {
+        min-width: 55px;
+        padding: 0.375rem 0.5rem;
+    }
+
+    .mobile-bet-label {
+        font-size: 0.5rem;
+    }
+
+    .mobile-bet-value {
+        font-size: 1rem;
+        font-weight: 700;
+    }
+
+    .mobile-chips-scroll {
+        gap: 0.5rem;
+        padding: 0;
+    }
+
+    .mobile-chip {
+        width: 44px;
+        height: 44px;
+        font-size: 0.625rem;
+    }
+
+    .mobile-quick-actions {
+        gap: 0.5rem;
+    }
+
+    .mobile-quick-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 0.75rem;
+    }
+
+    /* Modals */
+    .modal {
+        width: 92%;
+        max-width: 340px;
+        padding: 1.25rem;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    /* Toast */
+    .toast-container {
+        bottom: 80px;
+        right: 0.75rem;
+        left: auto;
+    }
+}
+
+/* Small Mobile: 360px and below */
+@media (max-width: 400px) {
+    html {
+        font-size: 15px;
+    }
+
+    .hide-mobile-sm {
+        display: none !important;
+    }
+
+    .header {
+        padding: 0.375rem 0.5rem;
+    }
+
+    .logo-img {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+
+    .logo-text {
+        font-size: 0.875rem;
+    }
+
+    .icon-btn {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+
+    .game-area {
+        padding: 0.5rem;
+    }
+
+    .table-surface {
+        padding: 1rem 0.75rem;
+    }
+
+    /* Cards */
+    .card {
+        width: 2.75rem;
+        height: 3.85rem;
+        margin-left: -0.375rem;
+    }
+
+    .card-rank {
+        font-size: 0.625rem;
+    }
+
+    .card-center {
+        font-size: 0.875rem;
+    }
+
+    .cards-row {
+        min-height: 4.5rem;
+    }
+
+    .hand-value {
+        font-size: 1rem;
+    }
+
+    /* Actions */
+    .action-btn {
+        width: 52px;
+        min-width: 52px;
+        max-width: 52px;
+    }
+
+    .action-icon {
+        width: 28px;
+        height: 28px;
+        font-size: 0.75rem;
+    }
+
+    .action-label {
+        font-size: 0.4375rem;
+    }
+
+    /* Mobile Bar */
+    .mobile-bottom-bar {
+        padding: 0.5rem;
+    }
+
+    .mobile-chip {
+        width: 38px;
+        height: 38px;
+        font-size: 0.5625rem;
+    }
+
+    .mobile-quick-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 0.625rem;
+    }
+
+    .mobile-bet-display {
+        min-width: 48px;
+        padding: 0.25rem 0.375rem;
+    }
+
+    .mobile-bet-value {
+        font-size: 0.875rem;
+    }
+
+    /* Deal button */
+    .deal-btn-main {
+        padding: 0.875rem 2rem;
+        font-size: 1rem;
+    }
+
+    /* Result */
+    .result-card {
+        min-width: 160px;
+        padding: 1.25rem 1.5rem;
+    }
+
+    .result-icon,
+    .result-icon i {
+        font-size: 2rem;
+    }
+
+    .result-text {
+        font-size: 0.875rem;
+    }
+
+    .result-amount {
+        font-size: 1.25rem;
+    }
+
+    /* Modals - Small Screen */
+    .modal {
+        width: 95%;
+        max-width: none;
+        padding: 1rem;
+        max-height: calc(100vh - 1rem);
+        max-height: calc(100dvh - 1rem);
+        margin: 0.5rem;
+    }
+
+    .modal-header {
+        margin-bottom: 0.75rem;
+    }
+
+    .modal-title {
+        font-size: 1rem;
+    }
+
+    .settings-section {
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+    }
+
+    .settings-section-title {
+        font-size: 0.5625rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .setting-row {
+        padding: 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .setting-select {
+        font-size: 0.75rem;
+        padding: 0.375rem;
+    }
+
+    /* Theme picker - compact grid */
+    .theme-picker {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.375rem;
+    }
+
+    .theme-btn {
+        padding: 0.375rem 0.25rem;
+    }
+
+    .theme-icon {
+        font-size: 1rem;
+    }
+
+    .theme-name {
+        font-size: 0.4375rem;
+    }
+
+    /* Volume slider */
+    .setting-slider {
+        height: 8px;
+    }
+
+    .setting-slider::-webkit-slider-thumb {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* Very Small Phones: 320px and below */
+@media (max-width: 320px) {
+    html {
+        font-size: 14px;
+    }
+
+    .action-dock {
+        flex-wrap: wrap;
+        max-width: 280px;
+        gap: 0.375rem;
+    }
+
+    .action-btn {
+        width: 48px;
+        min-width: 48px;
+        max-width: 48px;
+    }
+
+    .mobile-chips-scroll {
+        gap: 0.375rem;
+    }
+
+    .mobile-chip {
+        width: 34px;
+        height: 34px;
+        font-size: 0.5rem;
+    }
+
+    /* Modal - Very Small */
+    .modal {
+        padding: 0.75rem;
+        margin: 0.25rem;
+        max-height: calc(100vh - 0.5rem);
+        max-height: calc(100dvh - 0.5rem);
+    }
+
+    .modal-title {
+        font-size: 0.875rem;
+    }
+
+    .setting-row {
+        padding: 0.375rem;
+        font-size: 0.6875rem;
+    }
+
+    /* Theme picker - 3 column for tiny screens */
+    .theme-picker {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.25rem;
+    }
+
+    .theme-btn {
+        padding: 0.25rem;
+    }
+
+    .theme-icon {
+        font-size: 0.875rem;
+    }
+
+    .theme-name {
+        font-size: 0.375rem;
+    }
+}
+
+/* ============================================
+   Multi-Hand Mode Styling
+   ============================================ */
+
+.multi-hand-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    max-width: 100%;
+}
+
+.hand-seat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    background: var(--glass);
+    backdrop-filter: blur(16px);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border);
+    transition: all 0.3s ease;
+    min-width: 140px;
+}
+
+.hand-seat.active-seat {
+    border-color: var(--accent);
+    box-shadow:
+        0 0 20px var(--accent-dim),
+        var(--glass-inner-glow);
+}
+
+.hand-seat.inactive-seat {
+    opacity: 0.6;
+    filter: grayscale(0.3);
+}
+
+.hand-seat .seat-label {
+    font-family: var(--font-display);
+    font-size: 0.625rem;
+    color: var(--text-3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.hand-seat.active-seat .seat-label {
+    color: var(--accent);
+}
+
+.hand-seat .bet-indicator {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    color: var(--text-2);
+    padding: 0.25rem 0.5rem;
+    background: var(--bg-elevated);
+    border-radius: 1rem;
+}
+
+/* ============================================
+   Enhanced Glassmorphism Effects
+   ============================================ */
+
+/* Glass Panel Enhancement */
+.panel-section,
+.modal,
+.result-card,
+.insurance-modal {
+    backdrop-filter: var(--glass-blur) var(--glass-saturate);
+    box-shadow: var(--glass-shadow);
+}
+
+/* Glass Card Hover Effect */
+.panel-section:hover {
+    background: var(--glass-strong);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Premium Glow Effect */
+.glow-accent {
+    box-shadow:
+        0 0 20px var(--accent-dim),
+        0 0 40px rgba(var(--accent), 0.15),
+        var(--glass-inner-glow);
+}
+
+/* Floating Elements */
+.floating {
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+/* Shimmer Effect for Premium Elements */
+.shimmer {
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.1) 50%,
+            transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Enhanced Modal Glass Effect */
+.modal {
+    background: linear-gradient(145deg,
+            rgba(255, 255, 255, 0.06),
+            rgba(255, 255, 255, 0.02));
+    border: 1px solid var(--glass-border);
+    box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.4),
+        var(--glass-inner-glow);
+}
+
+/* Glass Button Enhancement */
+.btn-glass {
+    background: var(--glass);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    color: var(--text-1);
+    transition: all 0.2s ease;
+}
+
+.btn-glass:hover {
+    background: var(--glass-strong);
+    border-color: var(--accent);
+    box-shadow: 0 0 15px var(--accent-dim);
+}
+
+/* Neon Glow Text */
+.neon-text {
+    text-shadow:
+        0 0 10px var(--accent),
+        0 0 20px var(--accent),
+        0 0 30px var(--accent);
+}
+
+/* Premium Border Gradient */
+.border-gradient {
+    border: 2px solid transparent;
+    background-image: linear-gradient(var(--bg-card), var(--bg-card)),
+        linear-gradient(135deg, var(--accent), transparent);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+}
+
+/* Subtle Pulse Animation */
+.pulse-subtle {
+    animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+@keyframes pulse-subtle {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.85;
+    }
+}
+
+/* Card Glow on Win */
+.winning-glow {
+    box-shadow:
+        0 0 30px var(--accent-glow),
+        0 0 60px var(--accent-dim);
 }
