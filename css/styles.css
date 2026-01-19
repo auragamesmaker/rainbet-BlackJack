@@ -756,8 +756,15 @@ select {
 }
 
 @keyframes hint-pulse {
-    0%, 100% { box-shadow: 0 0 15px var(--accent-dim); }
-    50% { box-shadow: 0 0 25px var(--accent-glow); }
+
+    0%,
+    100% {
+        box-shadow: 0 0 15px var(--accent-dim);
+    }
+
+    50% {
+        box-shadow: 0 0 25px var(--accent-glow);
+    }
 }
 
 .hint-badge i {
@@ -1075,6 +1082,7 @@ select {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1094,123 +1102,141 @@ select {
     animation-fill-mode: backwards;
 }
 
-.cards-area .card:nth-child(1) { animation-delay: 0s; }
-.cards-area .card:nth-child(2) { animation-delay: 0.1s; }
-.cards-area .card:nth-child(3) { animation-delay: 0.2s; }
-.cards-area .card:nth-child(4) { animation-delay: 0.3s; }
-.cards-area .card:nth-child(5) { animation-delay: 0.4s; }
-.cards-area .card:nth-child(6) { animation-delay: 0.5s; }
+.cards-area .card:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.cards-area .card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.cards-area .card:nth-child(3) {
+    animation-delay: 0.2s;
+}
+
+.cards-area .card:nth-child(4) {
+    animation-delay: 0.3s;
+}
+
+.cards-area .card:nth-child(5) {
+    animation-delay: 0.4s;
+}
+
+.cards-area .card:nth-child(6) {
+    animation-delay: 0.5s;
+}
 
 /* ============================================
    New Layout Mobile Responsiveness
    ============================================ */
 
 @media (max-width: 700px) {
+
     /* Header bankroll display */
     .bankroll-display {
         padding: 0.375rem 0.75rem;
         gap: 0.5rem;
     }
-    
+
     .bankroll-amount {
         font-size: 1rem;
     }
-    
+
     .bankroll-stat {
         font-size: 0.5625rem;
         padding: 0.1875rem 0.375rem;
     }
-    
+
     .bankroll-stat.hands {
         display: none;
     }
-    
+
     /* Game container */
     .game-container {
         padding: 0.5rem;
     }
-    
+
     /* Game table zones */
     .game-table {
         padding: 0.5rem 0;
         min-height: 280px;
         gap: 0.75rem;
     }
-    
+
     .zone-label {
         font-size: 0.5625rem;
         letter-spacing: 1.5px;
     }
-    
+
     .dealer-zone,
     .player-zone {
         min-height: 70px;
     }
-    
+
     .hand-badge {
         font-size: 0.8125rem;
         padding: 0.1875rem 0.625rem;
         min-width: 2.25rem;
     }
-    
+
     .bet-indicator {
         padding: 0.375rem 0.875rem;
     }
-    
+
     .bet-indicator-label {
         font-size: 0.4375rem;
     }
-    
+
     .bet-indicator-value {
         font-size: 1rem;
     }
-    
+
     .hint-badge {
         font-size: 0.6875rem;
         padding: 0.3125rem 0.625rem;
     }
-    
+
     .betting-prompt {
         font-size: 0.5625rem;
     }
-    
+
     .table-center {
         min-height: 80px;
         padding: 0.375rem 0;
         gap: 0.5rem;
     }
-    
+
     /* Control bar */
     .game-controls {
         padding: 0.75rem;
         padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
     }
-    
+
     .chip-row {
         gap: 0.375rem;
     }
-    
+
     .chip-row .chip-modern {
         width: 42px;
         height: 42px;
         font-size: 0.625rem;
     }
-    
+
     .betting-actions {
         gap: 0.375rem;
     }
-    
+
     .bet-action-btn {
         width: 38px;
         height: 38px;
         font-size: 0.75rem;
     }
-    
+
     .betting-controls .btn-deal {
         padding: 0.625rem 1.5rem;
         font-size: 0.875rem;
     }
-    
+
     /* Deck info */
     .deck-info {
         position: absolute;
@@ -1219,7 +1245,7 @@ select {
         font-size: 0.625rem;
         padding: 0.25rem 0.5rem;
     }
-    
+
     /* Cards */
     .cards-area {
         min-height: 4.5rem;
@@ -1227,67 +1253,69 @@ select {
 }
 
 @media (max-width: 480px) {
+
     /* Extra small mobile */
     .bankroll-display {
         padding: 0.25rem 0.5rem;
         gap: 0.375rem;
     }
-    
+
     .bankroll-amount {
         font-size: 0.875rem;
     }
-    
+
     .bankroll-stat {
         font-size: 0.5rem;
         padding: 0.125rem 0.25rem;
     }
-    
+
     .chip-row .chip-modern {
         width: 36px;
         height: 36px;
         font-size: 0.5625rem;
     }
-    
+
     .bet-action-btn {
         width: 34px;
         height: 34px;
     }
-    
+
     .betting-controls .btn-deal {
         padding: 0.5rem 1.25rem;
         font-size: 0.75rem;
     }
-    
+
     .hand-badge {
         font-size: 0.75rem;
         padding: 0.1875rem 0.5rem;
     }
-    
+
     .bet-indicator-value {
         font-size: 1rem;
     }
-    
+
     .game-table {
         min-height: 180px;
     }
-    
+
     .cards-area {
         min-height: 4rem;
     }
 }
 
 @media (max-width: 360px) {
+
     /* Very small screens */
     .chip-row {
         gap: 0.25rem;
     }
-    
+
     .chip-row .chip-modern {
         width: 32px;
         height: 32px;
         font-size: 0.5rem;
     }
-    
+
     .game-table {
         min-height: 160px;
     }
@@ -1644,6 +1672,8 @@ select {
 }
 
 .card.dealing {
+    opacity: 0;
+    /* Start invisible to prevent flicker */
     animation: dealFromDeck 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 
@@ -1653,9 +1683,11 @@ select {
         opacity: 0;
         transform: translate(25px, -20px) scale(0.92);
     }
-    40% {
+
+    20% {
         opacity: 1;
     }
+
     100% {
         opacity: 1;
         transform: translate(0, 0) scale(1);
@@ -1664,6 +1696,7 @@ select {
 
 /* Dealer cards - subtle slide from upper right */
 .dealer-zone .card.dealing {
+    opacity: 0;
     animation: dealToDealer 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 
@@ -1672,17 +1705,42 @@ select {
         opacity: 0;
         transform: translate(20px, -15px) scale(0.94);
     }
-    40% {
+
+    20% {
         opacity: 1;
     }
+
     100% {
         opacity: 1;
         transform: translate(0, 0) scale(1);
     }
 }
 
+/* Face-down cards - maintain rotateY(180deg) throughout animation */
+.dealer-zone .card.dealing.flipped {
+    opacity: 0;
+    animation: dealToDealerFlipped 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+@keyframes dealToDealerFlipped {
+    0% {
+        opacity: 0;
+        transform: translate(20px, -15px) scale(0.94) rotateY(180deg);
+    }
+
+    20% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(0, 0) scale(1) rotateY(180deg);
+    }
+}
+
 /* Player cards - subtle slide from upper area */
 .player-zone .card.dealing {
+    opacity: 0;
     animation: dealToPlayer 0.28s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
 }
 
@@ -1691,9 +1749,11 @@ select {
         opacity: 0;
         transform: translate(20px, -25px) scale(0.94);
     }
-    40% {
+
+    20% {
         opacity: 1;
     }
+
     100% {
         opacity: 1;
         transform: translate(0, 0) scale(1);
@@ -1710,9 +1770,11 @@ select {
     0% {
         transform: rotateY(180deg) scale(0.98);
     }
+
     50% {
         transform: rotateY(90deg) scale(1.02);
     }
+
     100% {
         transform: rotateY(0deg) scale(1);
     }
@@ -1728,9 +1790,11 @@ select {
     0% {
         transform: rotateY(180deg) scale(0.98);
     }
+
     50% {
         transform: rotateY(90deg) scale(1.01);
     }
+
     100% {
         transform: rotateY(0deg) scale(1);
     }
@@ -1768,7 +1832,7 @@ select {
 @keyframes chipLift {
     to {
         transform: translateY(-0.25rem) scale(1.08);
-        box-shadow: 
+        box-shadow:
             0 6px 12px rgba(0, 0, 0, 0.5),
             inset 0 2px 4px rgba(255, 255, 255, 0.3);
     }
@@ -1784,6 +1848,7 @@ select {
         opacity: 1;
         transform: translateY(0) scale(1);
     }
+
     100% {
         opacity: 0;
         transform: translateY(-1rem) scale(0.8);
@@ -1804,13 +1869,16 @@ select {
         transform: scale(1);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
+
     30% {
         transform: scale(1.15);
         box-shadow: 0 0 30px var(--accent-glow);
     }
+
     60% {
         transform: scale(1.05);
     }
+
     100% {
         transform: scale(1);
         box-shadow: 0 0 20px var(--accent-glow);
@@ -1827,10 +1895,12 @@ select {
         transform: scale(1);
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
+
     40% {
         transform: scale(1.15);
         box-shadow: 0 0 40px var(--color-blackjack-glow);
     }
+
     100% {
         transform: scale(1);
         box-shadow: 0 0 25px var(--color-blackjack-glow);
@@ -1843,11 +1913,27 @@ select {
 }
 
 @keyframes bustShake {
-    0%, 100% { transform: translateX(0); }
-    20% { transform: translateX(-0.5rem); }
-    40% { transform: translateX(0.5rem); }
-    60% { transform: translateX(-0.3rem); }
-    80% { transform: translateX(0.3rem); }
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-0.5rem);
+    }
+
+    40% {
+        transform: translateX(0.5rem);
+    }
+
+    60% {
+        transform: translateX(-0.3rem);
+    }
+
+    80% {
+        transform: translateX(0.3rem);
+    }
 }
 
 /* ============================================
@@ -1855,58 +1941,111 @@ select {
    ============================================ */
 
 .deck-info.shuffling .deck-stat i {
-    animation: shuffleRotate 0.6s ease-in-out infinite;
+    animation: shuffleRotate 0.5s ease-in-out infinite;
 }
 
 @keyframes shuffleRotate {
-    0% { transform: rotate(0deg); }
-    25% { transform: rotate(-15deg); }
-    75% { transform: rotate(15deg); }
-    100% { transform: rotate(0deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(-20deg);
+    }
+
+    75% {
+        transform: rotate(20deg);
+    }
+
+    100% {
+        transform: rotate(0deg);
+    }
 }
 
-/* Shuffle deck visual effect */
+/* Shuffle deck visual effect - stacked cards animation */
 .game-container.shuffling::before {
     content: '';
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100px;
-    height: 140px;
-    background: var(--bg-card);
-    border-radius: 8px;
-    box-shadow: 
-        2px 2px 0 var(--bg-elevated),
-        4px 4px 0 var(--bg-card),
-        6px 6px 0 var(--bg-elevated);
-    animation: shuffleDeck 0.6s ease-in-out;
+    width: 70px;
+    height: 100px;
+    background: linear-gradient(145deg, #2d2d44, #1a1a2e);
+    border-radius: 6px;
+    box-shadow:
+        3px 3px 0 rgba(0, 0, 0, 0.3),
+        6px 6px 0 #2d2d44,
+        9px 9px 0 rgba(0, 0, 0, 0.3),
+        0 0 30px rgba(0, 245, 160, 0.2);
+    animation: shuffleDeck 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
     z-index: 100;
     pointer-events: none;
+}
+
+/* Subtle overlay during shuffle */
+.game-container.shuffling::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, rgba(0, 0, 0, 0.2) 0%, transparent 60%);
+    animation: shuffleOverlay 0.7s ease-in-out forwards;
+    z-index: 99;
+    pointer-events: none;
+}
+
+@keyframes shuffleOverlay {
+    0% {
+        opacity: 0;
+    }
+
+    30% {
+        opacity: 1;
+    }
+
+    70% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
 }
 
 @keyframes shuffleDeck {
     0% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(0.8);
+        transform: translate(-50%, -50%) scale(0.7) rotate(0deg);
     }
-    20% {
+
+    15% {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1);
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
     }
-    40% {
-        transform: translate(-60%, -50%) rotate(-5deg);
+
+    30% {
+        transform: translate(-55%, -50%) rotate(-8deg) scale(1);
     }
+
+    45% {
+        transform: translate(-45%, -50%) rotate(8deg) scale(1);
+    }
+
     60% {
-        transform: translate(-40%, -50%) rotate(5deg);
+        transform: translate(-52%, -50%) rotate(-4deg) scale(1);
     }
-    80% {
-        transform: translate(-50%, -50%) scale(1);
+
+    75% {
+        transform: translate(-48%, -50%) rotate(4deg) scale(1);
+    }
+
+    90% {
         opacity: 1;
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
     }
+
     100% {
         opacity: 0;
-        transform: translate(-50%, -50%) scale(0.8);
+        transform: translate(-50%, -50%) scale(0.8) rotate(0deg);
     }
 }
 
@@ -1919,9 +2058,18 @@ select {
 }
 
 @keyframes balanceIncrease {
-    0% { transform: scale(1); }
-    30% { transform: scale(1.1); color: var(--success); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    30% {
+        transform: scale(1.1);
+        color: var(--success);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 .bankroll-amount.decreasing {
@@ -1929,9 +2077,18 @@ select {
 }
 
 @keyframes balanceDecrease {
-    0% { transform: scale(1); }
-    30% { transform: scale(0.95); color: var(--error); }
-    100% { transform: scale(1); }
+    0% {
+        transform: scale(1);
+    }
+
+    30% {
+        transform: scale(0.95);
+        color: var(--error);
+    }
+
+    100% {
+        transform: scale(1);
+    }
 }
 
 /* Losing Card - subtle dim effect (continued) */
@@ -2009,10 +2166,12 @@ select {
         transform: scale(1);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
+
     50% {
         transform: scale(1.08);
         box-shadow: 0 0 25px rgba(255, 215, 0, 0.5);
     }
+
     100% {
         transform: scale(1.02);
         box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
@@ -2978,6 +3137,7 @@ select {
         opacity: 0;
         transform: scale(0.9) translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: scale(1) translateY(0);
@@ -3030,6 +3190,7 @@ select {
         opacity: 0;
         transform: scale(0.7);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -3037,12 +3198,16 @@ select {
 }
 
 @keyframes icon-celebrate {
-    0%, 100% {
+
+    0%,
+    100% {
         transform: scale(1) rotate(0deg);
     }
+
     25% {
         transform: scale(1.08) rotate(-5deg);
     }
+
     75% {
         transform: scale(1.08) rotate(5deg);
     }
@@ -3053,6 +3218,7 @@ select {
         opacity: 0;
         transform: translateY(6px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -3291,11 +3457,11 @@ select {
     transition: transform var(--transition);
 }
 
-.toggle input:checked + .toggle-slider {
+.toggle input:checked+.toggle-slider {
     background: var(--accent);
 }
 
-.toggle input:checked + .toggle-slider::before {
+.toggle input:checked+.toggle-slider::before {
     transform: translateX(1rem);
 }
 
@@ -3780,25 +3946,25 @@ select {
     .cards-area {
         min-height: 4rem;
     }
-    
+
     .game-table {
         padding: 0.75rem 0;
         min-height: 300px;
         gap: 0.875rem;
     }
-    
+
     .dealer-zone,
     .player-zone {
         min-height: 80px;
         gap: 0.5rem;
     }
-    
+
     .table-center {
         min-height: 100px;
         padding: 0.5rem 0;
         gap: 0.625rem;
     }
-    
+
     .zone-label {
         font-size: 0.625rem;
     }
@@ -4938,14 +5104,37 @@ select {
 }
 
 /* Theme preview colors */
-.theme-vanilla { background: linear-gradient(135deg, #00f5a0, #00c97f); }
-.theme-emerald { background: linear-gradient(135deg, #00ff7f, #00b35c); }
-.theme-crimson { background: linear-gradient(135deg, #ff4444, #cc0000); }
-.theme-sapphire { background: linear-gradient(135deg, #6366f1, #4f46e5); }
-.theme-neon { background: linear-gradient(135deg, #ff00ff, #00ffff); }
-.theme-vegas { background: linear-gradient(135deg, #ffd700, #ff8c00); }
-.theme-ocean { background: linear-gradient(135deg, #00bfff, #0066cc); }
-.theme-dark { background: linear-gradient(135deg, #00d26a, #008844); }
+.theme-vanilla {
+    background: linear-gradient(135deg, #00f5a0, #00c97f);
+}
+
+.theme-emerald {
+    background: linear-gradient(135deg, #00ff7f, #00b35c);
+}
+
+.theme-crimson {
+    background: linear-gradient(135deg, #ff4444, #cc0000);
+}
+
+.theme-sapphire {
+    background: linear-gradient(135deg, #6366f1, #4f46e5);
+}
+
+.theme-neon {
+    background: linear-gradient(135deg, #ff00ff, #00ffff);
+}
+
+.theme-vegas {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+}
+
+.theme-ocean {
+    background: linear-gradient(135deg, #00bfff, #0066cc);
+}
+
+.theme-dark {
+    background: linear-gradient(135deg, #00d26a, #008844);
+}
 
 .theme-name {
     font-size: 0.625rem;

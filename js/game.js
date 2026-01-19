@@ -61,7 +61,8 @@ class BlackjackGame {
             minBet: CONFIG.MIN_BET,
             maxBet: CONFIG.MAX_BET,
             autoStandOn21: true,
-            numHands: 1
+            numHands: 1,
+            dealerHoleCard: true  // true = face-down hole card (American), false = all cards face-up
         };
 
         this.stats = {
@@ -126,7 +127,7 @@ class BlackjackGame {
         await this.dealCardToHand(this.currentHand, true);
         await this.dealCardToHand(this.dealerHand, true);
         await this.dealCardToHand(this.currentHand, true);
-        await this.dealCardToHand(this.dealerHand, false);
+        await this.dealCardToHand(this.dealerHand, !this.settings.dealerHoleCard); // face-down if hole card enabled
 
         const dealerUpCard = this.dealerHand.cards[0];
 
@@ -497,13 +498,28 @@ class BlackjackGame {
 
     getStrategyHint() {
         if (this.state !== GameState.PLAYER_TURN) return null;
+
+        // Pass true count when counting is enabled for deviation indices
+        const trueCount = this.settings.countingEnabled ? this.deck.getTrueCount() : null;
+
         return getBasicStrategyRecommendation(
             this.currentHand,
             this.dealerHand.cards[0],
             this.canDouble(),
             this.canSplit(),
-            this.canSurrender()
+            this.canSurrender(),
+            trueCount
         );
+    }
+
+    getDeviationInfo() {
+        if (this.state !== GameState.PLAYER_TURN) return { isDeviation: false };
+        if (!this.settings.countingEnabled) return { isDeviation: false };
+
+        const trueCount = this.deck.getTrueCount();
+        const dealerValue = this.dealerHand.cards[0].value === 11 ? 11 : this.dealerHand.cards[0].value;
+
+        return getDeviationInfo(this.currentHand, dealerValue, trueCount);
     }
 
     // Notifications
@@ -610,13 +626,83 @@ class BlackjackGame {
 }
 
 /**
- * Basic strategy
+ * Illustrious 18 - Most important true count deviations
+ * Format: { playerValue_dealerValue: { threshold, action } }
+ * When true count >= threshold, use the deviation action instead of basic strategy
  */
-function getBasicStrategyRecommendation(playerHand, dealerUpCard, canDouble, canSplit, canSurrender) {
+const DEVIATION_INDICES = {
+    // Insurance (not a play, but included for completeness)
+    'insurance': { threshold: 3, action: 'TAKE_INSURANCE' },
+
+    // 16 vs 10: Stand at TC >= 0 (instead of hit)
+    '16_10': { threshold: 0, action: 'STAND', normal: 'HIT' },
+
+    // 15 vs 10: Stand at TC >= 4 (instead of hit)
+    '15_10': { threshold: 4, action: 'STAND', normal: 'HIT' },
+
+    // 10 vs 10: Double at TC >= 4 (instead of hit)
+    '10_10': { threshold: 4, action: 'DOUBLE', normal: 'HIT' },
+
+    // 12 vs 3: Stand at TC >= 2 (instead of hit)
+    '12_3': { threshold: 2, action: 'STAND', normal: 'HIT' },
+
+    // 12 vs 2: Stand at TC >= 3 (instead of hit)
+    '12_2': { threshold: 3, action: 'STAND', normal: 'HIT' },
+
+    // 11 vs A: Double at TC >= 1 (instead of hit in some rules)
+    '11_11': { threshold: 1, action: 'DOUBLE', normal: 'HIT' },
+
+    // 9 vs 2: Double at TC >= 1 (instead of hit)
+    '9_2': { threshold: 1, action: 'DOUBLE', normal: 'HIT' },
+
+    // 10 vs A: Double at TC >= 4 (instead of hit)
+    '10_11': { threshold: 4, action: 'DOUBLE', normal: 'HIT' },
+
+    // 9 vs 7: Double at TC >= 3 (instead of hit)
+    '9_7': { threshold: 3, action: 'DOUBLE', normal: 'HIT' },
+
+    // 16 vs 9: Stand at TC >= 5 (instead of hit)
+    '16_9': { threshold: 5, action: 'STAND', normal: 'HIT' },
+
+    // 13 vs 2: Stand at TC >= -1 (stand even more)
+    '13_2': { threshold: -1, action: 'STAND', normal: 'STAND' },
+
+    // 12 vs 4: Hit at TC < 0 (instead of stand)
+    '12_4': { threshold: 0, belowAction: 'HIT', action: 'STAND', normal: 'STAND' },
+
+    // 12 vs 5: Hit at TC < -2 (instead of stand)
+    '12_5': { threshold: -2, belowAction: 'HIT', action: 'STAND', normal: 'STAND' },
+
+    // 12 vs 6: Hit at TC < -1 (instead of stand)
+    '12_6': { threshold: -1, belowAction: 'HIT', action: 'STAND', normal: 'STAND' },
+
+    // 13 vs 3: Hit at TC < -2 (instead of stand)
+    '13_3': { threshold: -2, belowAction: 'HIT', action: 'STAND', normal: 'STAND' },
+
+    // TT vs 5: Split at TC >= 5
+    'TT_5': { threshold: 5, action: 'SPLIT', normal: 'STAND' },
+
+    // TT vs 6: Split at TC >= 4
+    'TT_6': { threshold: 4, action: 'SPLIT', normal: 'STAND' }
+};
+
+/**
+ * Basic strategy with deviation indices
+ */
+function getBasicStrategyRecommendation(playerHand, dealerUpCard, canDouble, canSplit, canSurrender, trueCount = null) {
     const playerValue = playerHand.getValue();
     const dealerValue = dealerUpCard.value === 11 ? 11 : dealerUpCard.value;
     const isSoft = playerHand.isSoft();
     const isPair = playerHand.canSplit();
+
+    // Check for deviation indices when true count is available
+    let deviation = null;
+    if (trueCount !== null) {
+        deviation = checkDeviationIndex(playerHand, dealerValue, trueCount, canDouble, canSplit);
+        if (deviation) {
+            return deviation;
+        }
+    }
 
     if (isPair && canSplit) {
         const pairRank = playerHand.cards[0].rank;
@@ -683,9 +769,98 @@ function getBasicStrategyRecommendation(playerHand, dealerUpCard, canDouble, can
     return 'HIT';
 }
 
+/**
+ * Check if a deviation index applies
+ */
+function checkDeviationIndex(playerHand, dealerValue, trueCount, canDouble, canSplit) {
+    const playerValue = playerHand.getValue();
+    const isPair = playerHand.canSplit();
+
+    // Check for TT (ten-ten pair) deviations
+    if (isPair && playerHand.cards[0].value === 10 && canSplit) {
+        const key = `TT_${dealerValue}`;
+        const dev = DEVIATION_INDICES[key];
+        if (dev && trueCount >= dev.threshold) {
+            return dev.action;
+        }
+    }
+
+    // Check for regular deviations
+    const key = `${playerValue}_${dealerValue}`;
+    const dev = DEVIATION_INDICES[key];
+
+    if (dev) {
+        // Some deviations apply when TC is below threshold
+        if (dev.belowAction && trueCount < dev.threshold) {
+            return dev.belowAction;
+        }
+        // Most deviations apply when TC is at or above threshold
+        if (trueCount >= dev.threshold) {
+            // Check if action is possible (e.g., can we double?)
+            if (dev.action === 'DOUBLE' && !canDouble) {
+                return null; // Can't double, use basic strategy
+            }
+            if (dev.action === 'SPLIT' && !canSplit) {
+                return null;
+            }
+            return dev.action;
+        }
+    }
+
+    return null; // No deviation applies
+}
+
+/**
+ * Get deviation info for display (shows when a deviation applies)
+ */
+function getDeviationInfo(playerHand, dealerValue, trueCount) {
+    const playerValue = playerHand.getValue();
+    const isPair = playerHand.canSplit();
+
+    // Check TT deviations
+    if (isPair && playerHand.cards[0].value === 10) {
+        const key = `TT_${dealerValue}`;
+        const dev = DEVIATION_INDICES[key];
+        if (dev && trueCount >= dev.threshold) {
+            return {
+                isDeviation: true,
+                threshold: dev.threshold,
+                action: dev.action,
+                reason: `TC ${trueCount >= 0 ? '+' : ''}${trueCount} >= ${dev.threshold >= 0 ? '+' : ''}${dev.threshold}`
+            };
+        }
+    }
+
+    const key = `${playerValue}_${dealerValue}`;
+    const dev = DEVIATION_INDICES[key];
+
+    if (dev) {
+        if (dev.belowAction && trueCount < dev.threshold) {
+            return {
+                isDeviation: true,
+                threshold: dev.threshold,
+                action: dev.belowAction,
+                reason: `TC ${trueCount >= 0 ? '+' : ''}${trueCount} < ${dev.threshold >= 0 ? '+' : ''}${dev.threshold}`
+            };
+        }
+        if (trueCount >= dev.threshold) {
+            return {
+                isDeviation: true,
+                threshold: dev.threshold,
+                action: dev.action,
+                reason: `TC ${trueCount >= 0 ? '+' : ''}${trueCount} >= ${dev.threshold >= 0 ? '+' : ''}${dev.threshold}`
+            };
+        }
+    }
+
+    return { isDeviation: false };
+}
+
 // === Global Exports ===
 window.BlackjackGame = BlackjackGame;
 window.GameState = GameState;
 window.ResultType = ResultType;
 window.CONFIG = CONFIG;
+window.DEVIATION_INDICES = DEVIATION_INDICES;
 window.getBasicStrategyRecommendation = getBasicStrategyRecommendation;
+window.getDeviationInfo = getDeviationInfo;

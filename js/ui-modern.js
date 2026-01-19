@@ -21,6 +21,8 @@ class BlackjackUI {
         this.soundEnabled = true;
         this.hintsEnabled = false;
         this.countingEnabled = false;
+        this.autoBetEnabled = false;
+        this.wrongPlayFeedback = false;
         this.lastBet = 0;
         this.reshuffleCooldown = false;
         this.winStreak = 0;
@@ -60,7 +62,7 @@ class BlackjackUI {
             gameMain: document.querySelector('.game-main'),
             gameContainer: document.querySelector('.game-container'),
             gameControls: document.getElementById('game-controls'),
-            
+
             // Cards
             dealerCards: document.getElementById('dealer-cards'),
             dealerValue: document.getElementById('dealer-value'),
@@ -95,6 +97,7 @@ class BlackjackUI {
             btnSplit: document.getElementById('btn-split'),
             btnSurrender: document.getElementById('btn-surrender'),
             btnReshuffle: document.getElementById('btn-reshuffle'),
+            btnReshuffleMobile: document.getElementById('btn-reshuffle-mobile'),
 
             // Control containers
             bettingControls: document.getElementById('betting-controls'),
@@ -147,9 +150,21 @@ class BlackjackUI {
 
             // New Settings
             toggleAutostand: document.getElementById('toggle-autostand'),
+            toggleAutobet: document.getElementById('toggle-autobet'),
+            toggleWrongplay: document.getElementById('toggle-wrongplay'),
+            toggleHoleCard: document.getElementById('toggle-hole-card'),
             themePicker: document.getElementById('theme-picker'),
             settingSoundPack: document.getElementById('setting-sound-pack'),
-            settingVolume: document.getElementById('setting-volume')
+            settingVolume: document.getElementById('setting-volume'),
+
+            // Keyboard shortcuts modal
+            shortcutsModal: document.getElementById('shortcuts-modal'),
+            btnCloseShortcuts: document.getElementById('btn-close-shortcuts'),
+
+            // Penetration bar
+            penetrationBar: document.getElementById('penetration-bar'),
+            penetrationFill: document.getElementById('penetration-fill'),
+            penetrationLabel: document.getElementById('penetration-label')
         };
 
         // Track placed chips for undo functionality
@@ -185,6 +200,7 @@ class BlackjackUI {
         this.elements.btnSplit?.addEventListener('click', () => this.handleSplit());
         this.elements.btnSurrender?.addEventListener('click', () => this.handleSurrender());
         this.elements.btnReshuffle?.addEventListener('click', () => this.handleReshuffleClick());
+        this.elements.btnReshuffleMobile?.addEventListener('click', () => this.handleReshuffleClick());
         this.elements.btnNewRound?.addEventListener('click', () => this.startNewRound());
 
         // Settings modal
@@ -215,6 +231,7 @@ class BlackjackUI {
         this.elements.toggleHints?.addEventListener('change', (e) => {
             this.hintsEnabled = e.target.checked;
             this.updateHint();
+            this.updateCountDisplay(); // Update penetration bar visibility
             this.saveUIPreferences();
         });
 
@@ -283,6 +300,29 @@ class BlackjackUI {
             if (this.soundManager) {
                 this.soundManager.setVolume(volume);
             }
+        });
+
+        // Auto-bet toggle
+        this.elements.toggleAutobet?.addEventListener('change', (e) => {
+            this.autoBetEnabled = e.target.checked;
+            this.saveUIPreferences();
+        });
+
+        // Wrong play feedback toggle
+        this.elements.toggleWrongplay?.addEventListener('change', (e) => {
+            this.wrongPlayFeedback = e.target.checked;
+            this.saveUIPreferences();
+        });
+
+        // Dealer hole card toggle
+        this.elements.toggleHoleCard?.addEventListener('change', (e) => {
+            this.game.updateSettings({ dealerHoleCard: e.target.checked });
+        });
+
+        // Keyboard shortcuts modal
+        this.elements.btnCloseShortcuts?.addEventListener('click', () => this.closeShortcutsModal());
+        this.elements.shortcutsModal?.addEventListener('click', (e) => {
+            if (e.target === this.elements.shortcutsModal) this.closeShortcutsModal();
         });
 
         // Insurance modal
@@ -385,20 +425,20 @@ class BlackjackUI {
             this.playSound('chip');
         }
     }
-    
+
     // Helper to convert an amount to chip array
     convertAmountToChips(amount) {
         const chips = [];
         let remaining = amount;
         const chipValues = [1000, 500, 100, 25, 5, 1];
-        
+
         chipValues.forEach(value => {
             while (remaining >= value) {
                 chips.push(value);
                 remaining -= value;
             }
         });
-        
+
         return chips;
     }
 
@@ -413,12 +453,12 @@ class BlackjackUI {
         if (this.elements.mobileBetValue) {
             this.elements.mobileBetValue.textContent = this.formatCurrency(amount);
         }
-        
+
         // Toggle has-bet class for CSS visibility of betting prompt
         if (this.elements.gameContainer) {
             this.elements.gameContainer.classList.toggle('has-bet', amount > 0);
         }
-        
+
         this.updateChipStack(amount);
         this.updateActionButtons();
     }
@@ -515,10 +555,10 @@ class BlackjackUI {
         // Create ONE single stack
         const MAX_VISIBLE_CHIPS = 5;
         const totalChips = this.placedChips.length;
-        
+
         const stack = document.createElement('div');
         stack.className = 'chip-stack';
-        
+
         // Show count badge if more than visible chips
         if (totalChips > MAX_VISIBLE_CHIPS) {
             stack.dataset.count = `×${totalChips}`;
@@ -526,7 +566,7 @@ class BlackjackUI {
 
         // Only show last N chips (stacked visually)
         const visibleChips = this.placedChips.slice(-MAX_VISIBLE_CHIPS);
-        
+
         visibleChips.forEach((value) => {
             const chip = document.createElement('div');
             chip.className = 'stacked-chip';
@@ -593,6 +633,73 @@ class BlackjackUI {
         await this.game.surrender();
     }
 
+    // === Action handlers with wrong-play feedback ===
+    async handleHitWithFeedback() {
+        if (!this.game.canHit()) return;
+        this.checkWrongPlay('HIT');
+        await this.handleHit();
+    }
+
+    async handleStandWithFeedback() {
+        if (!this.game.canStand()) return;
+        this.checkWrongPlay('STAND');
+        await this.handleStand();
+    }
+
+    async handleDoubleWithFeedback() {
+        if (!this.game.canDouble()) return;
+        this.checkWrongPlay('DOUBLE');
+        await this.handleDouble();
+    }
+
+    async handleSplitWithFeedback() {
+        if (!this.game.canSplit()) return;
+        this.checkWrongPlay('SPLIT');
+        await this.handleSplit();
+    }
+
+    async handleSurrenderWithFeedback() {
+        if (!this.game.canSurrender()) return;
+        this.checkWrongPlay('SURRENDER');
+        await this.handleSurrender();
+    }
+
+    checkWrongPlay(playerAction) {
+        if (!this.wrongPlayFeedback || !this.hintsEnabled) return;
+        if (this.game.state !== GameState.PLAYER_TURN) return;
+
+        const correctAction = this.game.getStrategyHint();
+        if (correctAction && playerAction !== correctAction) {
+            this.showWrongPlayFeedback(playerAction, correctAction);
+        }
+    }
+
+    showWrongPlayFeedback(playerAction, correctAction) {
+        // Flash the screen red briefly
+        const flash = document.createElement('div');
+        flash.className = 'wrong-play-flash';
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 300);
+
+        // Shake the button that was clicked
+        const buttonMap = {
+            'HIT': this.elements.btnHit,
+            'STAND': this.elements.btnStand,
+            'DOUBLE': this.elements.btnDouble,
+            'SPLIT': this.elements.btnSplit,
+            'SURRENDER': this.elements.btnSurrender
+        };
+
+        const clickedBtn = buttonMap[playerAction];
+        if (clickedBtn) {
+            clickedBtn.classList.add('wrong-play');
+            setTimeout(() => clickedBtn.classList.remove('wrong-play'), 500);
+        }
+
+        // Show toast with correct action
+        this.showToast(`Optimal: ${correctAction}`, 'error');
+    }
+
     handleReshuffleClick() {
         if (this.reshuffleCooldown || this.game.state !== GameState.BETTING) {
             if (this.game.state !== GameState.BETTING) {
@@ -605,10 +712,10 @@ class BlackjackUI {
 
     handleReshuffle() {
         this.updateShoeInfo();
-        
+
         // Play shuffle sound
         this.playSound('shuffle');
-        
+
         // Add shuffling animation class
         if (this.elements.gameContainer) {
             this.elements.gameContainer.classList.add('shuffling');
@@ -616,7 +723,7 @@ class BlackjackUI {
                 this.elements.gameContainer.classList.remove('shuffling');
             }, 700);
         }
-        
+
         // Add deck info animation
         if (this.elements.deckInfo) {
             this.elements.deckInfo.classList.add('shuffling');
@@ -624,28 +731,44 @@ class BlackjackUI {
                 this.elements.deckInfo.classList.remove('shuffling');
             }, 600);
         }
-        
+
         this.showToast('Deck reshuffled');
 
         this.reshuffleCooldown = true;
-        if (this.elements.btnReshuffle) {
-            this.elements.btnReshuffle.disabled = true;
-            this.elements.btnReshuffle.innerHTML = '<i class="fa-solid fa-hourglass-half"></i><span>30s</span>';
-        }
+        const updateButtons = (content, mobileContent, disabled) => {
+            if (this.elements.btnReshuffle) {
+                this.elements.btnReshuffle.disabled = disabled;
+                this.elements.btnReshuffle.innerHTML = content;
+            }
+            if (this.elements.btnReshuffleMobile) {
+                this.elements.btnReshuffleMobile.disabled = disabled;
+                this.elements.btnReshuffleMobile.innerHTML = mobileContent;
+            }
+        };
+
+        updateButtons(
+            '<i class="fa-solid fa-hourglass-half"></i><span>30s</span>',
+            '<i class="fa-solid fa-hourglass-half"></i>',
+            true
+        );
 
         let countdown = UI_CONFIG.RESHUFFLE_COOLDOWN_SEC;
         const interval = setInterval(() => {
             countdown--;
-            if (this.elements.btnReshuffle) {
-                this.elements.btnReshuffle.innerHTML = `<i class="fa-solid fa-hourglass-half"></i><span>${countdown}s</span>`;
-            }
+            updateButtons(
+                `<i class="fa-solid fa-hourglass-half"></i><span>${countdown}s</span>`,
+                '<i class="fa-solid fa-hourglass-half"></i>',
+                true
+            );
+
             if (countdown <= 0) {
                 clearInterval(interval);
                 this.reshuffleCooldown = false;
-                if (this.elements.btnReshuffle) {
-                    this.elements.btnReshuffle.disabled = false;
-                    this.elements.btnReshuffle.innerHTML = '<i class="fa-solid fa-rotate"></i><span>Reshuffle</span>';
-                }
+                updateButtons(
+                    '<i class="fa-solid fa-rotate"></i><span>Reshuffle</span>',
+                    '<i class="fa-solid fa-rotate"></i>',
+                    false
+                );
             }
         }, 1000);
     }
@@ -660,6 +783,15 @@ class BlackjackUI {
         this.updateShoeInfo();
         if (this.elements.dealerValue) this.elements.dealerValue.textContent = '-';
         if (this.elements.playerValue) this.elements.playerValue.textContent = '-';
+
+        // Auto-bet: automatically place last bet if enabled
+        if (this.autoBetEnabled && this.lastBet > 0 && this.lastBet <= this.game.balance) {
+            setTimeout(() => {
+                this.placedChips = this.convertAmountToChips(this.lastBet);
+                this.setBet(this.lastBet);
+                this.renderChipStacks();
+            }, 100);
+        }
     }
 
     // === Rendering ===
@@ -683,7 +815,16 @@ class BlackjackUI {
         cardEl.className = `card ${card.color} dealing`;
         cardEl.setAttribute('role', 'listitem');
         cardEl.setAttribute('aria-label', faceUp ? `${card.rank} of ${card.suit}` : 'Face down card');
-        if (!faceUp) cardEl.classList.add('flipped');
+
+        // Set initial inline styles to prevent flicker
+        // Card starts invisible; animation will fade it in
+        cardEl.style.opacity = '0';
+
+        if (!faceUp) {
+            cardEl.classList.add('flipped');
+            // Ensure the card is already rotated before animation starts
+            cardEl.style.transform = 'rotateY(180deg)';
+        }
 
         cardEl.innerHTML = `
             <div class="card-face card-front">
@@ -713,13 +854,26 @@ class BlackjackUI {
             if (isReveal) {
                 const holeCard = container.querySelector('.flipped');
                 if (holeCard) {
+                    // Clear inline transform so CSS animation can flip it
+                    holeCard.style.transform = '';
                     holeCard.classList.remove('flipped');
+                    holeCard.classList.add('revealing');
                     holeCard.setAttribute('aria-label', `${card.rank} of ${card.suit}`);
                     this.playSound('card');
+                    // Remove revealing class after animation
+                    setTimeout(() => holeCard.classList.remove('revealing'), 350);
                 }
             } else {
-                container.appendChild(this.createCardElement(card, card.faceUp !== false));
+                const cardEl = this.createCardElement(card, card.faceUp !== false);
+                container.appendChild(cardEl);
                 this.playSound('card');
+
+                // Remove dealing class and clear inline styles after animation completes
+                setTimeout(() => {
+                    cardEl.classList.remove('dealing');
+                    cardEl.style.opacity = '';
+                    cardEl.style.transform = '';
+                }, 400); // Slightly longer than animation duration
             }
 
             this.updateHandValue(hand, isDealer);
@@ -784,7 +938,7 @@ class BlackjackUI {
         // Set on both gameMain (for controls) and gameContainer (for game table elements)
         const main = this.elements.gameMain;
         const container = this.elements.gameContainer;
-        
+
         // Map game states to UI states
         const uiStateMap = {
             [GameState.BETTING]: 'betting',
@@ -795,9 +949,9 @@ class BlackjackUI {
             [GameState.PAYOUT]: 'result',
             [GameState.GAME_OVER]: 'result'
         };
-        
+
         const uiState = uiStateMap[state] || 'betting';
-        
+
         if (main) main.dataset.state = uiState;
         if (container) container.dataset.state = uiState;
 
@@ -845,60 +999,83 @@ class BlackjackUI {
         if (this.elements.cardsRemaining) this.elements.cardsRemaining.textContent = this.game.deck.remaining;
         if (this.elements.cardsTotal) this.elements.cardsTotal.textContent = this.game.deck.total;
         if (this.elements.deckCount) this.elements.deckCount.textContent = this.game.deck.deckCount;
+
+        // Update penetration indicator
+        this.updatePenetrationIndicator();
+    }
+
+    updatePenetrationIndicator() {
+        const deck = this.game.deck;
+        const dealtRatio = deck.dealtCards.length / deck.total;
+        const penetrationPercent = Math.round(dealtRatio * 100);
+
+        if (this.elements.penetrationFill) {
+            this.elements.penetrationFill.style.width = `${penetrationPercent}%`;
+        }
+
+        if (this.elements.penetrationLabel) {
+            this.elements.penetrationLabel.textContent = `${penetrationPercent}%`;
+        }
+
+        // Add warning class when penetration is high (near reshuffle point)
+        if (this.elements.penetrationBar) {
+            const isHigh = dealtRatio >= (deck.penetration - 0.1);
+            this.elements.penetrationBar.classList.toggle('high', isHigh);
+        }
     }
 
     updateBalance(balance, previousBalance = null) {
         if (!this.elements.balance) return;
-        
+
         const balanceEl = this.elements.balance;
         const parentEl = balanceEl.closest('.bankroll-amount');
-        
+
         // Animate if we have a previous balance to compare
         if (previousBalance !== null && previousBalance !== balance && parentEl) {
             parentEl.classList.remove('increasing', 'decreasing');
             // Force reflow
             void parentEl.offsetWidth;
-            
+
             if (balance > previousBalance) {
                 parentEl.classList.add('increasing');
             } else if (balance < previousBalance) {
                 parentEl.classList.add('decreasing');
             }
-            
+
             // Remove animation class after it completes
             setTimeout(() => {
                 parentEl.classList.remove('increasing', 'decreasing');
             }, 500);
         }
-        
+
         // Animate number counting
         this.animateValue(balanceEl, parseInt(balanceEl.textContent.replace(/,/g, '')) || 0, balance, 300);
     }
-    
+
     animateValue(element, start, end, duration) {
         if (start === end) {
             element.textContent = end.toLocaleString();
             return;
         }
-        
+
         const range = end - start;
         const startTime = performance.now();
-        
+
         const step = (currentTime) => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            
+
             // Ease out cubic
             const easeOut = 1 - Math.pow(1 - progress, 3);
             const current = Math.round(start + range * easeOut);
-            
+
             element.textContent = current.toLocaleString();
-            
+
             if (progress < 1) {
                 requestAnimationFrame(step);
             }
         };
-        
+
         requestAnimationFrame(step);
     }
 
@@ -920,6 +1097,11 @@ class BlackjackUI {
     updateCountDisplay() {
         if (this.elements.countDisplay) {
             this.elements.countDisplay.style.display = this.countingEnabled ? 'flex' : 'none';
+        }
+        // Show penetration bar only when counting or strategy hints are enabled
+        if (this.elements.penetrationBar) {
+            const showPenetration = this.countingEnabled || this.hintsEnabled;
+            this.elements.penetrationBar.style.display = showPenetration ? 'flex' : 'none';
         }
     }
 
@@ -1032,7 +1214,18 @@ class BlackjackUI {
 
         const hint = this.game.getStrategyHint();
         if (hint && this.elements.hintText) {
-            this.elements.hintText.textContent = hint;
+            // Check for deviation from basic strategy when counting is enabled
+            const deviationInfo = this.game.getDeviationInfo();
+
+            if (deviationInfo.isDeviation && this.countingEnabled) {
+                // Show deviation hint with special styling
+                this.elements.hintText.textContent = `${hint} (${deviationInfo.reason})`;
+                this.elements.hintContainer?.classList.add('deviation');
+            } else {
+                this.elements.hintText.textContent = hint;
+                this.elements.hintContainer?.classList.remove('deviation');
+            }
+
             if (this.elements.hintContainer) this.elements.hintContainer.style.display = '';
         }
     }
@@ -1052,6 +1245,31 @@ class BlackjackUI {
     // === Modals ===
     openSettings() { this.elements.settingsModal?.classList.add('visible'); }
     closeSettings() { this.elements.settingsModal?.classList.remove('visible'); }
+
+    // Keyboard shortcuts modal
+    openShortcutsModal() {
+        if (this.elements.shortcutsModal) {
+            this.elements.shortcutsModal.style.display = 'flex';
+            this.elements.shortcutsModal.classList.add('visible');
+        }
+    }
+
+    closeShortcutsModal() {
+        if (this.elements.shortcutsModal) {
+            this.elements.shortcutsModal.classList.remove('visible');
+            setTimeout(() => {
+                this.elements.shortcutsModal.style.display = 'none';
+            }, 200);
+        }
+    }
+
+    toggleShortcutsModal() {
+        if (this.elements.shortcutsModal?.classList.contains('visible')) {
+            this.closeShortcutsModal();
+        } else {
+            this.openShortcutsModal();
+        }
+    }
 
     openAddMoneyModal() {
         this.elements.addMoneyModal?.classList.add('visible');
@@ -1146,6 +1364,12 @@ class BlackjackUI {
     handleKeyboard(e) {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
 
+        // Show shortcuts modal with ? key
+        if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+            this.toggleShortcutsModal();
+            return;
+        }
+
         const chipKeyMap = { '1': 1, '2': 5, '3': 25, '4': 100, '5': 500, '6': 1000 };
 
         if (chipKeyMap[e.key] && this.game.state === GameState.BETTING) {
@@ -1155,11 +1379,11 @@ class BlackjackUI {
         }
 
         const keyMap = {
-            'h': () => this.handleHit(),
-            's': () => this.handleStand(),
-            'd': () => this.handleDouble(),
-            'p': () => this.handleSplit(),
-            'r': () => !e.ctrlKey && this.handleSurrender(),
+            'h': () => this.handleHitWithFeedback(),
+            's': () => this.handleStandWithFeedback(),
+            'd': () => this.handleDoubleWithFeedback(),
+            'p': () => this.handleSplitWithFeedback(),
+            'r': () => !e.ctrlKey && this.handleSurrenderWithFeedback(),
             'enter': () => {
                 if (this.game.state === GameState.BETTING) this.handleDeal();
                 else if (this.game.state === GameState.GAME_OVER) this.startNewRound();
@@ -1187,6 +1411,8 @@ class BlackjackUI {
                 soundEnabled: this.soundEnabled,
                 hintsEnabled: this.hintsEnabled,
                 countingEnabled: this.countingEnabled,
+                autoBetEnabled: this.autoBetEnabled,
+                wrongPlayFeedback: this.wrongPlayFeedback,
                 lastBet: this.lastBet,
                 winStreak: this.winStreak,
                 biggestWin: this.biggestWin
@@ -1203,6 +1429,8 @@ class BlackjackUI {
                 this.soundEnabled = prefs.soundEnabled ?? true;
                 this.hintsEnabled = prefs.hintsEnabled ?? false;
                 this.countingEnabled = prefs.countingEnabled ?? false;
+                this.autoBetEnabled = prefs.autoBetEnabled ?? false;
+                this.wrongPlayFeedback = prefs.wrongPlayFeedback ?? false;
                 this.lastBet = prefs.lastBet ?? 0;
                 this.winStreak = prefs.winStreak ?? 0;
                 this.biggestWin = prefs.biggestWin ?? 0;
@@ -1245,9 +1473,24 @@ class BlackjackUI {
             this.elements.toggleAutostand.checked = !!this.game.settings.autoStandOn21;
         }
 
+        // Auto-bet
+        if (this.elements.toggleAutobet) {
+            this.elements.toggleAutobet.checked = this.autoBetEnabled;
+        }
+
+        // Wrong play feedback
+        if (this.elements.toggleWrongplay) {
+            this.elements.toggleWrongplay.checked = this.wrongPlayFeedback;
+        }
+
         // Number of hands
         if (this.elements.settingNumHands) {
             this.elements.settingNumHands.value = this.game.settings.numHands || 1;
+        }
+
+        // Dealer hole card
+        if (this.elements.toggleHoleCard) {
+            this.elements.toggleHoleCard.checked = this.game.settings.dealerHoleCard !== false;
         }
 
         // Theme picker - set active theme

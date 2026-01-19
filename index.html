@@ -10,6 +10,11 @@
         content="Practice blackjack with Vanilla - fair shuffling, card counting trainer, and strategy training.">
 
     <link rel="icon" type="image/png" href="assets/logo.png">
+    <link rel="apple-touch-icon" href="assets/logo.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Blackjack">
 
     <!-- Preload critical resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -66,6 +71,10 @@
             </div>
 
             <div class="header-right">
+                <button type="button" class="icon-btn header-reshuffle-btn" id="btn-reshuffle-mobile"
+                    title="Reshuffle Deck" aria-label="Reshuffle Deck">
+                    <i class="fa-solid fa-rotate"></i>
+                </button>
                 <button type="button" class="icon-btn" id="btn-add-chips" title="Add Chips" aria-label="Add Chips">
                     <i class="fa-solid fa-coins"></i>
                 </button>
@@ -121,6 +130,10 @@
                     <div class="deck-stat">
                         <i class="fa-solid fa-layer-group"></i>
                         <span id="cards-remaining">312</span>/<span id="cards-total">312</span>
+                    </div>
+                    <div class="penetration-bar" id="penetration-bar" title="Deck Penetration">
+                        <div class="penetration-fill" id="penetration-fill"></div>
+                        <span class="penetration-label" id="penetration-label">0%</span>
                     </div>
                     <button type="button" class="btn-reshuffle" id="btn-reshuffle" aria-label="Reshuffle Deck">
                         <i class="fa-solid fa-rotate"></i>
@@ -271,6 +284,17 @@
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
+
+                    <div class="setting-row">
+                        <label for="toggle-hole-card">
+                            <span>Dealer Hole Card</span>
+                            <span class="setting-hint">Face-down card (American style)</span>
+                        </label>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-hole-card" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="settings-section">
@@ -307,6 +331,28 @@
                         <label for="toggle-autostand">Auto Stand on 21</label>
                         <label class="toggle">
                             <input type="checkbox" id="toggle-autostand" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row">
+                        <label for="toggle-autobet">
+                            <span>Auto-Bet</span>
+                            <span class="setting-hint">Repeat last bet after each hand</span>
+                        </label>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-autobet">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="setting-row">
+                        <label for="toggle-wrongplay">
+                            <span>Wrong Play Feedback</span>
+                            <span class="setting-hint">Flash when deviating from strategy</span>
+                        </label>
+                        <label class="toggle">
+                            <input type="checkbox" id="toggle-wrongplay">
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
@@ -407,6 +453,46 @@
     <!-- UI Components -->
     <div id="toast-container"></div>
 
+    <!-- Keyboard Shortcuts Modal -->
+    <div class="modal-backdrop" id="shortcuts-modal" role="dialog" aria-modal="true" aria-labelledby="shortcuts-title"
+        style="display: none;">
+        <div class="modal modal-shortcuts">
+            <div class="modal-header">
+                <h2 class="modal-title" id="shortcuts-title">Keyboard Shortcuts</h2>
+                <button type="button" class="modal-close" id="btn-close-shortcuts" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="shortcuts-content">
+                <div class="shortcut-group">
+                    <h3 class="shortcut-group-title">Game Actions</h3>
+                    <div class="shortcut-row"><kbd>H</kbd><span>Hit</span></div>
+                    <div class="shortcut-row"><kbd>S</kbd><span>Stand</span></div>
+                    <div class="shortcut-row"><kbd>D</kbd><span>Double Down</span></div>
+                    <div class="shortcut-row"><kbd>P</kbd><span>Split</span></div>
+                    <div class="shortcut-row"><kbd>R</kbd><span>Surrender</span></div>
+                </div>
+                <div class="shortcut-group">
+                    <h3 class="shortcut-group-title">Betting</h3>
+                    <div class="shortcut-row"><kbd>1</kbd><span>Add $1 chip</span></div>
+                    <div class="shortcut-row"><kbd>2</kbd><span>Add $5 chip</span></div>
+                    <div class="shortcut-row"><kbd>3</kbd><span>Add $25 chip</span></div>
+                    <div class="shortcut-row"><kbd>4</kbd><span>Add $100 chip</span></div>
+                    <div class="shortcut-row"><kbd>5</kbd><span>Add $500 chip</span></div>
+                    <div class="shortcut-row"><kbd>6</kbd><span>Add $1000 chip</span></div>
+                    <div class="shortcut-row"><kbd>C</kbd><span>Clear bet</span></div>
+                </div>
+                <div class="shortcut-group">
+                    <h3 class="shortcut-group-title">Navigation</h3>
+                    <div class="shortcut-row"><kbd>Enter</kbd><span>Deal / Next Round</span></div>
+                    <div class="shortcut-row"><kbd>Space</kbd><span>Deal / Next Round</span></div>
+                    <div class="shortcut-row"><kbd>?</kbd><span>Toggle this help</span></div>
+                    <div class="shortcut-row"><kbd>Esc</kbd><span>Close modals</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Core Modules -->
     <script src="js/sounds.js"></script>
     <script src="js/themes.js"></script>
@@ -416,6 +502,21 @@
 
     <!-- App Initialization -->
     <script src="js/init.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((registration) => {
+                        console.log('SW registered:', registration.scope);
+                    })
+                    .catch((error) => {
+                        console.log('SW registration failed:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 
 </html>

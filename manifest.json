@@ -1,0 +1,33 @@
+{
+  "name": "Vanilla Blackjack",
+  "short_name": "Blackjack",
+  "description": "Practice blackjack with fair shuffling, card counting trainer, and strategy hints",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#080810",
+  "theme_color": "#00f5a0",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Play Blackjack",
+      "url": "/index.html",
+      "description": "Start a new blackjack session"
+    }
+  ]
+}
