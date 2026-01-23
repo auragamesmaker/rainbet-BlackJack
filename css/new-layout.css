@@ -858,11 +858,9 @@ html body .chip-1000 .chip-value {
        Uses high specificity to override styles.css
        ============================================ */
 
-    /* Override the flex display with grid for mobile */
+    /* Override the flex display with grid for mobile (scoped to playing state) */
     .game-main[data-state="playing"] .action-controls,
-    .game-main[data-state="playing"] #action-controls,
-    #action-controls,
-    .action-controls {
+    .game-main[data-state="playing"] #action-controls {
         position: fixed !important;
         bottom: 0 !important;
         left: 0 !important;
