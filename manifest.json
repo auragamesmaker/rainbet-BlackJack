@@ -1,5 +1,5 @@
 {
-  "name": "Vanilla Blackjack",
+  "name": "Rainbet Blackjack",
   "short_name": "Blackjack",
   "description": "Practice blackjack with fair shuffling, card counting trainer, and strategy hints",
   "start_url": "/index.html",
@@ -30,4 +30,5 @@
       "description": "Start a new blackjack session"
     }
   ]
+
 }
