@@ -3,7 +3,7 @@
  * Enables offline play by caching all game assets
  */
 
-const CACHE_NAME = 'vanilla-blackjack-v1';
+const CACHE_NAME = 'Rainbet-blackjack-v1';
 const ASSETS_TO_CACHE = [
     '/',
     '/index.html',
@@ -122,3 +122,4 @@ self.addEventListener('message', (event) => {
         self.skipWaiting();
     }
 });
+
